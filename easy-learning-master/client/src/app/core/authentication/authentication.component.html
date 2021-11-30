@@ -1,0 +1,123 @@
+<div class="container-fluid auth_box">
+  <div class="d-flex justify-content-center h-100">
+    <!-- For Login -->
+    <div class="card" *ngIf="!isSignup">
+      <div class="card-header">
+        <h3>Login</h3>
+      </div>
+      <div class="card-body">
+        <form class="form" #loginform="ngForm" role="form" autocomplete="off" id="formLogin">
+          <div class="row">
+            <div class="col-lg-8">
+              <div class="input-group form-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+                <input type="number" [(ngModel)]="mobileInput" #mNo='ngModel' [pattern]="mobilepattern"
+                  class="form-control" name="mNo" id="mNo" placeholder="Mobile No." name="mobileInput" required>
+              </div>
+              <div *ngIf="mNo.invalid && (mNo.dirty || mNo.touched)" class="text-danger">
+
+                <div *ngIf="mNo.errors.required">
+                  Mobile No is required
+                </div>
+                <div *ngIf="mNo.errors.pattern">
+                  Enter Valid Mobile No
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="form-group">
+                <button type="submit" [disabled]="mNo.invalid" (click)="sendOTP()" class="btn float-right login_btn"
+                  id="btnLogin">Send OTP</button>
+              </div>
+            </div>
+          </div>
+          <div class="input-group form-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-key"></i></span>
+            </div>
+            <input type="password" class="form-control" [(ngModel)]="otpInput" #otp="ngModel" placeholder="OTP"
+              name="otpInput" id="otpInput" required>
+          </div>
+          <div *ngIf="otp.invalid && (otp.dirty || otp.touched)" class="text-danger">
+            <div *ngIf="otp.errors.required">
+              OTP is required
+            </div>
+          </div>
+          <div class="form-group">
+            <button type="submit" [disabled]="loginform.invalid" (click)="doLogin(loginform)"
+              class="btn float-right login_btn" id="btnLogin">Login</button>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <div class="d-flex justify-content-center links">
+          Don't have an account?&nbsp;<span (click)="toggleAuth(loginform)" id="btnLogin"
+            class="btn p-0 text-primary">Sign Up</span>
+        </div>
+        <div class="d-flex justify-content-center">
+          <a href="#">Forgot your password?</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- For SignUP -->
+    <div class="card" *ngIf="isSignup">
+      <div class="card-header">
+        <h3>Sign up </h3>
+      </div>
+      <div class="card-body">
+        <form class="form" role="form" #registerform="ngForm" autocomplete="off" id="formLogin">
+          <div class="row">
+            <div class="col-lg-8">
+              <div class="input-group form-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+                <input type="number" [(ngModel)]="mobileInput" [pattern]="mobilepattern" #mNo="ngModel"
+                  placeholder="Mobile No." class="form-control" name="mobileInput" id="mobileInput" required>
+              </div>
+              <div *ngIf="mNo.invalid && (mNo.dirty || mNo.touched)" class="text-danger">
+                <div *ngIf="mNo.errors.required">
+                  Mobile No is required
+                </div>
+                <div *ngIf="mNo.errors.pattern">
+                  Enter Valid Mobile No
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="form-group">
+                <button type="submit" [disabled]="mNo.invalid" (click)="sendOTP()" class="btn float-right login_btn"
+                  id="btnLogin">Send OTP</button>
+              </div>
+            </div>
+          </div>
+          <div class="input-group form-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-key"></i></span>
+            </div>
+            <input type="password" [(ngModel)]="otpInput" #otp="ngModel" placeholder="OTP" class="form-control"
+              name="otpInput" id="otpInput" required>
+          </div>
+          <div *ngIf="otp.invalid && (otp.dirty || otp.touched)" class="text-danger">
+            <div *ngIf="otp.errors.required">
+              Otp is required
+            </div>
+          </div>
+          <div class="form-group">
+            <button type="submit" [disabled]="registerform.invalid" (click)="registerUser(registerform)"
+              class="btn float-right login_btn" id="btnLogin">Register Now</button>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <div class="d-flex justify-content-center links">
+          Already have an account?&nbsp;<span (click)="toggleAuth(registerform)" id="btnLogin"
+            class="btn p-0 text-primary">Log In</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

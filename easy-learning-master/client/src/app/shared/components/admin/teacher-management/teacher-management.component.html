@@ -1,0 +1,246 @@
+<div>
+  <!--h4 class="text-muted mb-4">Tables </h4-->
+
+  <div class="row mb-4">
+
+    <div class="col-md-12">
+      <div class="card border-0 rounded-0">
+        <div class="card-title mb-1 p-3">
+          <h5>Teacher Management</h5>
+          <br>
+          <button type="button" (click)="isEdit=false" class="btn btn-primary" data-toggle="modal" data-backdrop="static" data-target="#teacherModal">Add
+            Teacher</button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">First Name</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col">Mobile No</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Class</th>
+                  <th scope="col">Board</th>
+                  <th scope="col">Subjects</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">City</th>
+                  <th scope="col">State</th>
+                  <th scope="col">Qualification</th>
+                  <th scope="col">Subscription</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let teacher of teacherData | paginate: { itemsPerPage: 10, currentPage: p } ; let i=index">
+                  <th scope="row">{{i+1}}</th>
+                  <td>{{teacher.firstName}}</td>
+                  <td>{{teacher.lastName}}</td>
+                  <td>{{teacher.mobileNo}}</td>
+                  <td>{{teacher.email}}</td>
+                  <td>{{teacher.classes}}</td>
+                  <td>{{teacher.board}}</td>
+                  <td>{{teacher.subjects}}</td>
+                  <td>{{teacher.address}}</td>
+                  <td>{{teacher.city}}</td>
+                  <td>{{teacher.state}}</td>
+                  <td>{{teacher.qualification}}</td>
+                  <td>{{teacher.subscription}}</td>
+                  <td>
+                    <a (click)="openUpdateModal(teacher)" data-toggle="modal" data-backdrop="static" data-target="#teacherModal" class="btn btn-sm btn-outline-lightning rounded-0 mr-2 ">
+                      <i class="far fa-edit"></i>
+                    </a>
+                    <a class="btn btn-sm btn-outline-lightning rounded-0">
+                      <i class="far fa-trash-alt"></i>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+        <div id="pagination">
+          <pagination-controls (pageChange)="p=$event"></pagination-controls>
+        </div> 
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+
+
+<!-- Teacher Modal -->
+<div class="modal fade" id="teacherModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Teacher Details</h5>
+        <button type="button" (click)="formReset(tForm)" class="close" #closeBtn data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form #tForm='ngForm'>
+          <div class="row">
+            <div class="col-4">
+              <label for="fname" class="col-form-label">First Name:</label>
+              <input type="text" class="form-control" #firstName='ngModel' name="firstName"
+                [(ngModel)]="teacherForm.firstName" id="fname" required>
+              <div *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)" class="text-danger">
+                <div *ngIf="firstName.errors.required">
+                  First Name is required
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <label for="lname" class="col-form-label">Last Name:</label>
+              <input type="text" class="form-control" #lastName='ngModel' name="lastName"
+                [(ngModel)]="teacherForm.lastName" id="lname" required>
+              <div *ngIf="lastName.invalid && (lastName.dirty || lastName.touched)" class="text-danger">
+                <div *ngIf="lastName.errors.required">
+                  Last Name is required
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <label for="mNo" class="col-form-label">Mobile No:</label>
+              <input type="number" class="form-control" #mobileNo='ngModel' [pattern]="mobilePattern" name="mobileNo"
+                [(ngModel)]="teacherForm.mobileNo" id="mNo" required>
+              <div *ngIf="mobileNo.invalid && (mobileNo.dirty || mobileNo.touched)" class="text-danger">
+                <div *ngIf="mobileNo.errors.required">
+                  Mobile No is required
+                </div>
+                <div *ngIf="mobileNo.errors.pattern">
+                  Enter valid Mobile No
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-4">
+              <label for="addr" class="col-form-label">Address:</label>
+              <input type="text" class="form-control" #address='ngModel' name="address"
+                [(ngModel)]="teacherForm.address" id="addr" required>
+              <div *ngIf="address.invalid && (address.dirty || address.touched)" class="text-danger">
+                <div *ngIf="address.errors.required">
+                  Address is required
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <label for="city" class="col-form-label">City:</label>
+              <input type="text" class="form-control" #city='ngModel' name="city" [(ngModel)]="teacherForm.city"
+                id="city" required>
+              <div *ngIf="city.invalid && (city.dirty || city.touched)" class="text-danger">
+                <div *ngIf="city.errors.required">
+                  City is required
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+               <label for="state" class="col-form-label">State: </label>
+              <select class="form-control" [(ngModel)]="teacherForm.state" name="state" required>
+                <option class="dropdown-item" value="" disabled selected>Select State</option>
+                <option *ngFor="let state of stateArr" class="dropdown-item"  value={{state.name}}>{{state.name}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-4">
+              <label for="e-Mail" class="col-form-label">Email:</label>
+              <input type="text" #email='ngModel' name="email" [(ngModel)]="teacherForm.email" [pattern]="emailPattern"
+                class="form-control" id="e-Mail" required>
+              <div *ngIf="email.invalid && (email.dirty || email.touched)" class="text-danger">
+                <div *ngIf="email.errors.required">
+                  Email is required
+                </div>
+                <div *ngIf="email.errors.pattern">
+                  Enter valid Email
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <label for="quali" class="col-form-label">Qualification:</label>
+              <input type="text" #qualification='ngModel' name="qualification" [(ngModel)]="teacherForm.qualification"
+                class="form-control" id="qualification" required>
+              <div *ngIf="qualification.invalid && (qualification.dirty || qualification.touched)" class="text-danger">
+                <div *ngIf="qualification.errors.required">
+                  Qualification is required
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <label class="col-form-label">Subjects:</label>
+              <ng-multiselect-dropdown  placeholder="Select Subject" [data]="dropdownList"
+                [(ngModel)]="selectedItems" name="selectedItems" [settings]="dropdownSettings"  (onDeSelect)="OnItemDeSelect($event)" (onSelect)="onItemSelect($event)">
+              </ng-multiselect-dropdown>
+              <!-- <div *ngIf="qualification.invalid && (qualification.dirty || qualification.touched)" class="text-danger">
+                <div *ngIf="qualification.errors.required">
+                  Qualification is required
+                </div>
+              </div> -->
+            </div>
+            </div>
+            <div class="row">
+              <div class="col-4">
+                <label for="subscription" class="col-form-label">Subscription:</label>
+                <select class="form-control"  (change)="onSubscriptionChange($event)" name="subscribe">
+                  <option class="dropdown-item" value="free" selected>Free</option>
+                  <option class="dropdown-item"  value="paid">Paid</option>
+                </select>
+              </div>
+              <div class="col-4">
+                <label for="fname" class="col-form-label">Demo VideoId:</label>
+                <input type="text" class="form-control" #demoId='ngModel' name="demoId"
+                  [(ngModel)]="teacherForm.demoId" id="dId" required>
+                <div *ngIf="demoId.invalid && (demoId.dirty || demoId.touched)" class="text-danger">
+                  <div *ngIf="demoId.errors.required">
+                    Demo VideoId is required
+                  </div>
+                </div>
+              </div>
+              <div class="col-4">
+                <label class="col-form-label">Classes:</label>
+                <ng-multiselect-dropdown  placeholder="Select Class" [data]="classList"
+                  [(ngModel)]="selectedItems2" name="selectedItems2" [settings]="dropdownSettings"  (onDeSelect)="OnItemDeSelect2($event)" (onSelect)="onItemSelect2($event)">
+                </ng-multiselect-dropdown>
+                <!-- <div *ngIf="qualification.invalid && (qualification.dirty || qualification.touched)" class="text-danger">
+                  <div *ngIf="qualification.errors.required">
+                    Qualification is required
+                  </div>
+                </div> -->
+              </div>
+              <div class="col-4">
+                <label class="col-form-label">Board:</label>
+                <ng-multiselect-dropdown  placeholder="Select Board" [data]="boardList"
+                  [(ngModel)]="selectedItems3" name="selectedItems3" [settings]="dropdownSettings"  (onDeSelect)="OnItemDeSelect3($event)" (onSelect)="onItemSelect3($event)">
+                </ng-multiselect-dropdown>
+              </div>
+              <div class="col-4">
+                <label for="about" class="col-form-label">About:</label>
+                <textarea type="text" #about='ngModel' name="about" [(ngModel)]="teacherForm.about"
+                  class="form-control" id="about" required></textarea>
+                <div *ngIf="about.invalid && (about.dirty || about.touched)" class="text-danger">
+                  <div *ngIf="about.errors.required">
+                    About is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="formReset(tForm)" data-dismiss="modal">Close</button>
+        <button *ngIf="!isEdit" type="button" class="btn btn-primary" [disabled]="tForm.invalid || !(subjectArr.length>0) || !(classArr.length>0)" (click)="addTeacher(tForm)">Add
+          Teacher</button>
+          <button *ngIf="isEdit" type="button" class="btn btn-primary" [disabled]="tForm.invalid || !(subjectArr.length>0) || !(classArr.length>0)" (click)="updateTeacher(tForm)">Update
+            Teacher</button>
+      </div>
+    </div>
+  </div>
+</div>

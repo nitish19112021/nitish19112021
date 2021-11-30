@@ -1,0 +1,25 @@
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat');
+
+html,body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+
+.pg_height {
+    height: 100%;
+}
+.cgbg_primary {
+    background-color: #E52D37;
+}
+
+.dropdown:hover > .dropdown-menu {
+    display: block;
+}
+.dropdown > .dropdown-toggle:active {
+   /*Without this, clicking will make it sticky*/
+    pointer-events: none;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

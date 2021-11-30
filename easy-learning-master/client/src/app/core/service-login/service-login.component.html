@@ -1,0 +1,100 @@
+<div class="container login-container">
+  <div class="row">
+    <div class="col-md-6 login-form-1 mx-auto">
+      <h3>Service Login</h3>
+      <form class="pb-2">
+        <div class="form-group">
+          <input type="email" #email='ngModel' name="email" [(ngModel)]="serviceDetails.email" class="form-control"
+            [pattern]="emailPattern" placeholder="Your Email *" required />
+          <div *ngIf="email.invalid && (email.dirty || email.touched)" class="text-danger">
+            <div *ngIf="email.errors.required">
+              Email is required
+            </div>
+            <div *ngIf="email.errors.pattern">
+              Enter valid Email
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="password" #password='ngModel' name="password" minlength="6" [pattern]="passwordPattern"
+            [(ngModel)]="serviceDetails.password" class="form-control" placeholder="Your Password *" required />
+          <div *ngIf="password.invalid && (password.dirty || password.touched)" class="text-danger">
+            <div *ngIf="password.errors.required">
+              Password is required
+            </div>
+            <div *ngIf="password.errors.pattern">
+              Enter valid Password
+            </div>
+            <div *ngIf="password.errors.minlength && !password.errors.pattern">
+              Password should be of atleast 6 characters
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            <div class="input-group-text set-cursor">
+              <input type="radio" name="selectAs" value="teacher" (change)="toggleCheckbox($event)">
+              <span class="pl-2" style="font-size: 13px;">Teacher</span>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="input-group-text set-cursor">
+              <input type="radio" name="selectAs" value="admin" (change)="toggleCheckbox($event)">
+              <span class="pl-2" style="font-size: 13px;">Admin</span>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="input-group-text set-cursor">
+              <input type="radio" name="selectAs" value="instructor" (change)="toggleCheckbox($event)">
+              <span class="pl-2" style="font-size: 13px;">Instructor</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group mt-3">
+          <input type="submit" (click)="login()" [disabled]="email.invalid || password.invalid || selectedRole==''"
+            class="btnSubmit disabled" value="Login" />
+        </div>
+        <div class="form-group mt-2">
+          <a href="#" class="ForgetPwd">Forget Password?</a>
+        </div>
+      </form>
+      <h5 class="text-center">OR</h5>
+      <div>
+        <button (click)="sendOTP()" class="btn btnSubmit mx-auto">Send OTP</button>
+      </div>
+      <div *ngIf="enableOTP">
+        <div class="input-group mb-3">
+          <input type="number" name="mNo" #mNo="ngModel" [(ngModel)]="mobileInput" [pattern]="mobilepattern" required
+            class="form-control" placeholder="Enter Mobile No Here">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" [disabled]="mNo.invalid" (click)="setupOTP()" type="button"
+              id="button-addon2">Send OTP</button>
+          </div>
+        </div>
+        <div *ngIf="mNo.invalid && (mNo.dirty || mNo.touched)" class="text-danger">
+
+          <div *ngIf="mNo.errors.required">
+            Mobile No is required
+          </div>
+          <div *ngIf="mNo.errors.pattern">
+            Enter Valid Mobile No
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" name="otp" #otp="ngModel" name="otpInput" [(ngModel)]="otpInput"
+            required placeholder="Enter OTP Here">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" [disabled]="otp.invalid" (click)="doLogin()" type="button"
+              id="button-addon2">Login</button>
+          </div>
+        </div>
+        <div *ngIf="otp.invalid && (otp.dirty || otp.touched)" class="text-danger">
+
+          <div *ngIf="otp.errors.required">
+            OTP is required
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

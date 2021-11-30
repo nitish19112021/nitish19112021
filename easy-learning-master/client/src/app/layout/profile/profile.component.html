@@ -1,0 +1,384 @@
+<nav class="px-5 navbar navbar-expand-lg navbar-dark cgbg_primary">
+  <nav class="navbar navbar-expand-lg ">
+    <button type="button" id="sidebarCollapse" class="btn btn-info">
+      <i class="fas fa-align-left"></i>
+
+    </button>
+  </nav>
+  <a class="navbar-brand mr-auto" href="#"><img src="./assets/cg_logo.png"></a>
+  <a class="text-white font-weight-bold" href="#" routerLink="/teacher/profile">{{profileName}}</a>
+  <div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
+      <img class="rounded-circle" style="width: 50px; height: 50px;"
+        src="https://cdn3.iconfinder.com/data/icons/avatars-round-flat/33/man5-512.png">
+      <span class="caret"></span>
+    </button>
+    <!-- <ul class="dropdown-menu">
+      <li><a role="menuitem" class="btn btn-large btn-primary" (click)="logout()" href="#">Log Out</a></li>
+    </ul> -->
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+      <!-- <a  class="dropdown-item" href="#">Edit Profile</a> -->
+      <a (click)="logout()" class="dropdown-item" href="#">Log Out</a>
+    </div>
+  </div>
+</nav>
+
+<div *ngIf="userRole =='student'" style="height: 800px;" class="container-fluid bg-light">
+
+  <div class="row">
+    <div class="col-lg-8 d-block mx-auto mt-5">
+      <div class="jumbotron">
+        <!-- Form Name -->
+        <h1 class="font-weight-bold text-center">Student Profile</h1>
+        <div class="row">
+          <div class="col-lg-12">
+            <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png" class="mb-3 avatar img-circle img-thumbnail"
+              alt="avatar">
+            <input type="file" class="mb-3 text-center center-block file-upload">
+          </div>
+
+
+        </div>
+        <form class="form-horizontal" #studentForm='ngForm'>
+          <fieldset [disabled]="disableForm">
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">Name</label>
+              <div class="col-md-8 float-right">
+                <input id="textinput" name="name" #name="ngModel" [(ngModel)]="profileData.name" type="text"
+                  class="form-control input-md" required>
+                  <div *ngIf="name.invalid && (name.dirty || name.touched)" class="text-danger">
+                    <div *ngIf="name.errors.required">
+                      Name is required
+                    </div>
+                  </div>
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="email">Email</label>
+              <div class="col-md-8 float-right">
+                <input id="email" name="email" [(ngModel)]="profileData.email" type="text" class="form-control input-md">
+
+              </div>
+            </div>
+
+            <!-- Multiple Radios (inline) -->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="radios">Gender</label>
+              <div class="col-md-8 float-right pt-2">
+                <label class="radio-inline mr-3" for="radios-0">
+                  <input type="radio" [(ngModel)]="profileData.gender" name="profileData.gender" id="radios-0"
+                    value="male">
+                  Male
+                </label>
+                <label class="radio-inline mr-3" for="radios-1">
+                  <input type="radio" [(ngModel)]="profileData.gender" name="profileData.gender" id="radios-1"
+                    value="female">
+                  Female
+                </label>
+                <label class="radio-inline mr-3" for="radios-2">
+                  <input type="radio" [(ngModel)]="profileData.gender" name="profileData.gender" id="radios-2"
+                    value="others">
+                  Others
+                </label>
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">City</label>
+              <div class="col-md-8 float-right">
+                <input id="textinput" name="city" [(ngModel)]="profileData.city" type="text" placeholder="Enter City"
+                  class="form-control input-md">
+
+              </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="selectbasic">Class</label>
+              <div class="col-md-8 float-right">
+                <!-- <label>{{profileData.class}}</label> -->
+                <select [(ngModel)]="profileData.class" #class="ngModel" name="class" class="form-control" required>
+                  <option *ngFor="let class of classList" class="dropdown-item"  value={{class}}>{{class}}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="selectbasic">Board</label>
+              <div class="col-md-8 float-right">
+                <label>{{profileData.board}}</label>
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">Mobile</label>
+              <div class="col-md-8 float-right">
+                <input id="textinput" name="mobileNo" #mobileNo="ngModel" [pattern]="mobilePattern" [(ngModel)]="profileData.mobileNo" type="number"
+                  placeholder="Mobile Number" class="form-control input-md" required>
+                  <div *ngIf="mobileNo.invalid && (mobileNo.dirty || mobileNo.touched)" class="text-danger">
+
+                    <div *ngIf="mobileNo.errors.required">
+                      Mobile No is required
+                    </div>
+                    <div *ngIf="mobileNo.errors.pattern">
+                      Enter Valid Mobile No
+                    </div>
+                  </div>
+              </div>
+            </div>
+
+            <!-- Password input-->
+            <!-- <div class="form-group">
+              <label class="col-md-4 control-label" for="passwordinput">Change Password</label>
+              <div class="col-md-8 float-right">
+                <input id="passwordinput" name="passwordinput" type="password" placeholder="Enter New Password"
+                  class="form-control input-md">
+
+              </div>
+            </div> -->
+
+          </fieldset>
+
+          <!-- Button -->
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="singlebutton"></label>
+            <div class="col-md-8 float-right">
+              <button *ngIf="disableForm" id="singlebutton" (click)="disableForm=false" name="singlebutton"
+                class="btn btn-primary">Edit Profile</button>
+              <button *ngIf="!disableForm" [disabled]="studentForm.invalid" id="singlebutton2" (click)="disableForm=false;updateStudent(studentForm)"
+                name="up" class="btn btn-primary">Update</button>
+              <button *ngIf="!disableForm" id="singlebutton3" (click)="disableForm=true;getProfileData()"
+                name="singlebutton" class="btn btn-primary ml-2">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="userRole =='teacher'" style="height: 800px;" class="container-fluid bg-light">
+
+  <div class="row">
+    <div class="col-lg-8 d-block mx-auto mt-5">
+      <div class="jumbotron">
+        <!-- Form Name -->
+        <h1 class="font-weight-bold text-center">Teacher Profile</h1>
+        <div class="row">
+          <div class="col-lg-12">
+            <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png" class="mb-3 avatar img-circle img-thumbnail"
+              alt="avatar">
+            <input type="file" class="mb-3 text-center center-block file-upload">
+          </div>
+
+
+        </div>
+        <form class="form-horizontal" #profileForm='ngForm'>
+          <fieldset [disabled]="disableForm">
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">Name</label>
+              <div class="col-md-8 float-right">
+                <input id="textinput" name="name" disabled="true" [(ngModel)]="profileData.name" type="text"
+                  class="form-control input-md">
+
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="email">Email</label>
+              <div class="col-md-8 float-right">
+                <input id="email" name="email" #email="ngModel" [pattern]="emailPattern" [(ngModel)]="profileData.email"
+                  type="text" class="form-control input-md" required>
+                <div *ngIf="email.invalid && (email.dirty || email.touched)" class="text-danger">
+
+                  <div *ngIf="email.errors.required">
+                    Email is required
+                  </div>
+                  <div *ngIf="email.errors.pattern">
+                    Enter Valid Email
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Multiple Radios (inline) -->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="radios">Gender</label>
+              <div class="col-md-8 float-right pt-2">
+                <label class="radio-inline mr-3" for="radios-0">
+                  <input type="radio" [(ngModel)]="profileData.gender" name="profileData.gender" id="radios-0"
+                    value="male">
+                  Male
+                </label>
+                <label class="radio-inline mr-3" for="radios-1">
+                  <input type="radio" [(ngModel)]="profileData.gender" name="profileData.gender" id="radios-1"
+                    value="female">
+                  Female
+                </label>
+                <label class="radio-inline mr-3" for="radios-2">
+                  <input type="radio" [(ngModel)]="profileData.gender" name="profileData.gender" id="radios-2"
+                    value="others">
+                  Others
+                </label>
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">City</label>
+              <div class="col-md-8 float-right">
+                <input id="textinput" name="city" #city="ngModel" [(ngModel)]="profileData.city" type="text"
+                  placeholder="Enter City" class="form-control input-md" required>
+                <div *ngIf="city.invalid && (city.dirty || city.touched)" class="text-danger">
+                  <div *ngIf="city.errors.required">
+                    City is required
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="selectbasic">Classes</label>
+              <div class="col-md-8 float-right">
+                <label>{{profileData.classes?.join(",")}}</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="selectbasic">Subjects</label>
+              <div class="col-md-8 float-right">
+                <label>{{profileData.subjects?.join(",")}}</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="selectbasic">Subscription</label>
+              <div class="col-md-8 float-right">
+                <label>{{profileData.subscription}}</label>
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">Mobile</label>
+              <div class="col-md-8 float-right">
+                <input id="textinput" name="mobileNo" [pattern]="mobilePattern" #mobileNo="ngModel"
+                  [(ngModel)]="profileData.mobileNo" type="text" placeholder="Mobile Number"
+                  class="form-control input-md">
+                <div *ngIf="mobileNo.invalid && (mobileNo.dirty || mobileNo.touched)" class="text-danger">
+
+                  <div *ngIf="mobileNo.errors.required">
+                    Mobile No is required
+                  </div>
+                  <div *ngIf="mobileNo.errors.pattern">
+                    Enter Valid Mobile No
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-4 control-label">Demo VideoId</label>
+              <div class="col-md-8 float-right">
+                <input id="vId" name="demoId" #demoId="ngModel" [(ngModel)]="profileData.demoId" type="text"
+                  placeholder="Demo VideoId" class="form-control input-md">
+                <div *ngIf="demoId.invalid && (demoId.dirty || demoId.touched)" class="text-danger">
+
+                  <div *ngIf="demoId.errors.required">
+                    DemoId is required
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="textinput">About</label>
+              <div class="col-md-8 float-right">
+                <textarea id="textinput" name="about" #about="ngModel" [(ngModel)]="profileData.about" type="text"
+                  placeholder="About Me" class="form-control input-md"></textarea>
+                <div *ngIf="about.invalid && (about.dirty || about.touched)" class="text-danger">
+                  <div *ngIf="about.errors.required">
+                    About is required
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </fieldset>
+          <!-- Button -->
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="singlebutton"></label>
+            <div class="col-md-8 float-right">
+              <button *ngIf="disableForm" id="singlebutton1" (click)="disableForm=false" name="ep"
+                class="btn btn-primary">Edit</button>
+              <button *ngIf="!disableForm" id="singlebutton2" (click)="disableForm=false;updateTeacher(profileForm)"
+                name="up" class="btn btn-primary">Update</button>
+              <button *ngIf="!disableForm" id="singlebutton3" (click)="disableForm=true;getProfileData()"
+                name="singlebutton" class="btn btn-primary ml-2">Cancel</button>
+            </div>
+          </div>
+        </form>
+        <form #passwordForm="ngForm">
+          <h4>Change Password</h4>
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="textinput">Current Password</label>
+            <div class="col-md-8 float-right">
+              <input id="textinput" [pattern]="passwordPattern" minlength="6" maxlength="12" required
+                name="currentPassword" #currentPassword="ngModel" [(ngModel)]="passwordData.currentPassword"
+                type="password" placeholder="Current Password" class="form-control input-md">
+              <div *ngIf="currentPassword.invalid && (currentPassword.dirty || currentPassword.touched)"
+                class="text-danger">
+
+                <div *ngIf="currentPassword.errors.required">
+                  Current Password is required
+                </div>
+                <div *ngIf="currentPassword.errors.pattern">
+                  Enter Valid Current Password
+                </div>
+                <div *ngIf="currentPassword.errors.minlength">
+                  Password Should be at least 6 Characters
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="textinput">New Password</label>
+            <div class="col-md-8 float-right">
+              <input id="textinput2" [pattern]="passwordPattern" minlength="6" maxlength="12" required
+                name="newPassword" #newPassword="ngModel" [(ngModel)]="passwordData.newPassword" type="password"
+                placeholder="New Password" class="form-control input-md">
+              <div *ngIf="newPassword.invalid && (newPassword.dirty || newPassword.touched)" class="text-danger">
+
+                <div *ngIf="newPassword.errors.required">
+                  New Password is required
+                </div>
+                <div *ngIf="newPassword.errors.pattern">
+                  Enter Valid New Password
+                </div>
+                <div *ngIf="newPassword.errors.minlength">
+                  Password Should be at least 6 Characters
+                </div>
+              </div>
+              <div class="form-group mt-2">
+                <div class="float-right">
+                  <button id="submtbutton" [disabled]="currentPassword.invalid || newPassword.invalid"
+                    (click)="changePassword(passwordForm)" name="sibutton" class="btn btn-primary">Submit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

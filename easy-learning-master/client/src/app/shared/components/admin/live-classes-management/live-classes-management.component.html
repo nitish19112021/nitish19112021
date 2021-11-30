@@ -1,0 +1,121 @@
+<div>
+
+  <!--h4 class="text-muted mb-4">Tables </h4-->
+
+  <div class="row mb-4">
+
+    <div class="col-md-12">
+      <div class="card border-0 rounded-0">
+        <div class="card-title mb-1 p-3">
+          <h5>Live Classes Management</h5>
+          <br>
+          <a href="https://studio.youtube.com/channel/UC4cTpmNhFqQLqGQNIoTT__Q/livestreaming/webcam" target="_blank"
+            class="btn btn-primary">Schedule Video</a>
+          <button type="button" [disabled] = "!(selectedArray.length>0)" (click)="addToDatabase()" class="btn btn-primary ml-4">Add To Database</button>
+        </div>
+        <div>
+        <button type="button" (click)="showLive()" class="btn btn-primary ml-4">Live Table</button>
+        <button type="button" (click)="showDB()" class="btn btn-primary ml-4">Database Table</button>
+      </div>
+        <div *ngIf="!dm" class="card-body">
+          <div class="table-responsive-md">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" (click)="CheckAllOptions('customCheck')" class="custom-control-input"
+                        id="customCheck1">
+                      <label class="custom-control-label" for="customCheck1">All</label>
+                    </div>
+                  </th>
+                  <th scope="col">Class</th>
+                  <th scope="col">Subject</th>
+                  <th scope="col">Teacher</th>
+                  <th scope="col">Board</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <!-- <th scope="col">Actions</th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let video of combinedArray | paginate: { itemsPerPage: 10, currentPage: p } ; let i=index">
+                  <th scope="row">
+                  <td>
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" [(ngModel)]="video.checked" (change)="onVideoSelected(video,$event)"
+                        [value]="i" class="custom-control-input" id="{{i}}">
+                      <label class="custom-control-label" for="{{i}}">{{i+1}}</label>
+                    </div>
+                  </td>
+                  <td>{{video.t}}</td>
+                  <td>{{video.d}}</td>
+                  <td>{{video.snippet?.description}}</td>
+                  <td>{{video.board}}</td>
+                  <td>{{video.snippet?.scheduledStartTime | date}}</td>
+                  <td>{{video.snippet?.scheduledStartTime | date:'shortTime' }}</td>
+                  <!-- <td>
+                    <a class="btn btn-sm btn-outline-lightning rounded-0 mr-2 ">
+                      <i class="far fa-edit"></i>
+                    </a>
+                    <a class="btn btn-sm btn-outline-lightning rounded-0">
+                      <i class="far fa-trash-alt"></i>
+                    </a>
+                  </td> -->
+                </tr>
+
+              </tbody>
+            </table>
+
+          </div>
+          <div id="pagination">
+            <pagination-controls (pageChange)="p=$event"></pagination-controls>
+          </div>
+        </div>
+
+        <div *ngIf="dm" class="card-body">
+          <div class="table-responsive-md">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Class</th>
+                  <th scope="col">Subject</th>
+                  <th scope="col">Teacher</th>
+                  <th scope="col">Board</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let video of broadcastArray; let i=index">
+                  <th scope="row">{{i+1}}</th>
+                  <td>{{video.t}}</td>
+                  <td>{{video.d}}</td>
+                  <td>{{video.snippet?.description}}</td>
+                  <td>{{video.board}}</td>
+                  <td>{{video.snippet?.scheduledStartTime | date}}</td>
+                  <td>{{video.snippet?.scheduledStartTime | date:'shortTime' }}</td>
+                  <td>
+                    <a class="btn btn-sm btn-outline-lightning rounded-0 mr-2 ">
+                      <i class="far fa-edit"></i>
+                    </a>
+                    <a class="btn btn-sm btn-outline-lightning rounded-0">
+                      <i class="far fa-trash-alt"></i>
+                    </a>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

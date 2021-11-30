@@ -1,0 +1,39 @@
+<div class="container">
+    <div class="row">
+        <div class="col-lg-9 col-md-9 col-sm-6">
+            <h5>Teacher</h5>
+            <h1 class="font-weight-bold">{{teacherData?.firstName}} {{teacherData?.lastName}}</h1>
+            <h5>Subject - {{teacherData?.subjects}} </h5>
+            <h5>Class - {{teacherData?.classes}} </h5>
+            <div class="row">
+                <div class="col-lg-6">
+                    <h5>Total Students</h5>
+                    <h4>{{teacherData?.noofStudents}}</h4>
+                </div>
+                <div class="col-lg-6">
+                    <h5>Reviews</h5>
+                    <h4>123456</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <h3>Demo Video</h3>
+                    <youtube-player width="400" height="350" videoId="{{teacherData?.demoId}}"></youtube-player>
+                </div>
+                <div class="col-lg-6">
+                    <h5>About Me</h5>
+                    <h4>{{teacherData?.about}}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6">
+            <img class="img-fluid rounded-circle" src="https://img-a.udemycdn.com/user/200_H/13952972_e853.jpg">
+            <button *ngIf="statusCode==0" class="btn btn-primary disabled">Teacher Already Subscribed</button>
+            <button *ngIf="!isSubscribed && statusCode==1" class="btn btn-primary" (click)="addSubscription()">Subscribe to watch classes</button>
+            <button *ngIf="statusCode==2 && !isUpdated" class="btn btn-primary" (click)="updateSubscription()">Update Your Subscription</button>
+            <button *ngIf="isSubscribed" class="btn btn-success disabled">Subscribed Successfully</button>
+            <button *ngIf="isUpdated" class="btn btn-success" disabled>Subscription Updated Successfully</button>
+            <button *ngIf="isSubscribed || isUpdated || statusCode==0" class="btn btn-primary" (click)="goLive()" >Go To Video</button>
+        </div>
+    </div>
+</div>

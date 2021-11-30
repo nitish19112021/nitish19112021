@@ -1,0 +1,68 @@
+<div>
+    <form #myForm='ngForm' class="m-2">
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="inputState">Select Class</label>
+                <select [(ngModel)]="courseForm.class" #class="ngModel" name="class" class="form-control" required>
+                  <option value="" disabled>Select Class</option>
+                  <option *ngFor="let class of classList" class="dropdown-item"  value={{class}}>{{class}}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="inputState">Select Board</label>
+                <select [(ngModel)]="courseForm.board" #board="ngModel" name="board" class="form-control" required>
+                  <option value="" disabled>Select Board</option>
+                  <option *ngFor="let board of boardList" class="dropdown-item"  value={{board}}>{{board}}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="inputState">Select Subject</label>
+                <select [(ngModel)]="courseForm.subject" (change)="onSubjectSelect($event)" #subject="ngModel" name="subject" class="form-control" required>
+                  <option value="" disabled>Select Subject</option>
+                  <option *ngFor="let subject of subjectList" class="dropdown-item"  value={{subject}}>{{subject}}</option>
+                </select>
+              </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+              <label>Select Chapter</label>
+              <select [(ngModel)]="courseForm.chapter" (change)="setTopic($event)" name="chapter" class="form-control" required>
+                <option value="" disabled>Select Chapter</option>
+                <option *ngFor="let chapter of courseData" class="dropdown-item"  value={{chapter.chapter}}>{{chapter.chapter}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label>Select Topic</label>
+              <select [(ngModel)]="courseForm.topic" name="topic" class="form-control" required>
+                <option value="" disabled>Select Topic</option>
+                <option *ngFor="let topic of topicData" class="dropdown-item"  value={{topic.name}}>{{topic.name}}</option>
+              </select>
+            </div>
+      </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" [(ngModel)]="courseForm.title" #title="ngModel" name="title" class="form-control" placeholder="Enter Title" required>
+          <div *ngIf="title.invalid && (title.dirty || title.touched)" class="text-danger">
+            <div *ngIf="title.errors.required">
+              Title is required
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="courseForm.description" #description="ngModel" name="description" class="form-control" placeholder="Enter Description" required>
+          <div *ngIf="description.invalid && (description.dirty || description.touched)" class="text-danger">
+            <div *ngIf="description.errors.required">
+              Description is required
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="inputFile">Select Video</label>
+            <input  #inputFile type="file" [(ngModel)]="myFile" name="file"  accept="video/mp4,video/x-m4v,video/*" (change)="uploadFile($event)" class="form-control" id="inputFile" required>
+          </div>
+        </div>
+        <button type="submit" [disabled]="myForm.invalid && isUploaded" (click)="addCourse(myForm)" class="btn btn-primary">Add</button>
+      </form>
+</div>

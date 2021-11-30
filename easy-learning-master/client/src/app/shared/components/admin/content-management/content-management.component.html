@@ -1,0 +1,53 @@
+<div>
+    <form #contentForm='ngForm' class="m-2">
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label>Select Class</label>
+                <select [(ngModel)]="contentDetails.class" #class="ngModel" name="class" class="form-control" required>
+                  <option value="" disabled>Select Class</option>
+                  <option *ngFor="let class of classList" class="dropdown-item"  value={{class}}>{{class}}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Select Board</label>
+                <select [(ngModel)]="contentDetails.board" #board="ngModel" name="board" class="form-control" required>
+                  <option value="" disabled>Select Board</option>
+                  <option *ngFor="let board of boardList" class="dropdown-item"  value={{board}}>{{board}}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Select Subject</label>
+                <select [(ngModel)]="contentDetails.subject" #subject="ngModel" name="subject" class="form-control" required>
+                  <option value="" disabled>Select Subject</option>
+                  <option *ngFor="let subject of subjectList" class="dropdown-item"  value={{subject}}>{{subject}}</option>
+                </select>
+              </div>
+        </div>
+        <div class="row">
+          <div class="form-group col-md-6">
+              <label for="inputState">Add Chapter</label>
+              <div class="input-group mb-1">
+                <input type="text" class="form-control" #chapter='ngModel' name="chapter" [(ngModel)]="contentDetails.chapter" placeholder="Add Chapter" required>
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary" (click)="addTopic()" type="button" id="button-addon2">+ Topic</button>
+                </div>
+              </div>
+              <div *ngIf="chapter.invalid && (chapter.dirty || chapter.touched)" class="text-danger">
+                <div *ngIf="chapter.errors.required">
+                  Chapter Name is required
+                </div>
+              </div>
+            </div>
+      </div>
+      <div *ngFor="let topic of contentDetails.topicArray; let i=index" class="form-row">
+        <div class="form-group col-md-6">
+          <label for="inputTopic">{{i+1}} Topic Name</label>
+          <input type="text" name="topic{{i}}" [(ngModel)]="topic.name" (blur)="afterInsert($event,i)" class="form-control" placeholder="Enter Topic" required>
+        </div>
+        <div class="form-group col-md-2 mt-auto">
+            <button type="submit" (click)="removeTopic(i)" class="btn btn-danger">Delete</button>
+          </div>
+    </div>
+        <button type="submit" [disabled]="contentForm.invalid || !(contentDetails.topicArray.length>0)" (click)="addContent(contentForm)" class="btn btn-primary">Add</button>
+      </form>
+</div>

@@ -1,0 +1,151 @@
+<div class="container mt-4">
+
+  <div class="d-block justify-content-center">
+    <div class="searchbar">
+      <input class="search_input" type="text" name="" placeholder="Search...">
+      <a href="#" class="search_icon"><i class="fas fa-search"></i></a>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-3">
+  <div class="row">
+    <div class="col-lg-6">
+      <h4 class="pt-3 font-weight-bold text-secondary">Live Classes</h4>
+    </div>
+    <div class="col-lg-6">
+      <div class="float-right mt-2 d-flex">
+        <select class="form-control mr-3" [(ngModel)]="BoardFilter2"  (change)="onBoardChange2($event)" name="board">
+          <option class="dropdown-item" value="" selected>CBSE</option>
+          <option class="dropdown-item" value="1" >ICSE</option>
+          <!-- <option *ngFor="let subject of subjectList" class="dropdown-item"  value={{subject}}>{{subject}}</option> -->
+        </select>
+        <select class="form-control mr-3" [(ngModel)]="SubjectFilter2"  (change)="onSubjectChange2($event)" name="student">
+          <option class="dropdown-item" value="" selected>All</option>
+          <option *ngFor="let subject of subjectList" class="dropdown-item"  value={{subject}}>{{subject}}</option>
+        </select>
+        <select class="form-control" [(ngModel)]="languageFilter"  (change)="onLanguageChange($event)" name="language">
+          <option class="dropdown-item" value="" selected>English</option>
+          <option class="dropdown-item" value="1" >Hindi</option>   
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="row">
+    <div *ngFor="let video of liveVideoArray" class="col-md-3">
+      <div class="card" style="cursor:pointer" (click)="openSubscription(video)">
+        <div class="image">
+          <img src="{{video.snippet?.thumbnails?.medium?.url}}" />
+        </div>
+        <div class="card-inner">
+          <div class="header">
+            <h5>{{video.snippet?.title}}</h5>
+            <h6>{{video.snippet?.description}}</h6>
+        </div>
+        <div class="content">
+          <p>Live At {{video.snippet?.scheduledStartTime | date:'short'}}</p>
+        </div>
+          </div>
+      </div>
+     
+    </div>
+  </div>
+</div>
+
+
+<div class="container mt-3">
+  <div class="row">
+    <div class="col-lg-6">
+      <h4 class="pt-3 font-weight-bold text-secondary">Upcoming Classes</h4>
+    </div>
+    <div class="col-lg-6">
+      <div class="float-right mt-2 d-flex">
+        <select class="form-control mr-3" [(ngModel)]="BoardFilter"  (change)="onBoardChange($event)" name="board">
+          <option class="dropdown-item" value="" selected>CBSE</option>
+          <option class="dropdown-item" value="1" >ICSE</option>
+          <!-- <option *ngFor="let subject of subjectList" class="dropdown-item"  value={{subject}}>{{subject}}</option> -->
+        </select>
+        <select class="form-control mr-3" [(ngModel)]="SubjectFilter"  (change)="onSubjectChange($event)" name="student">
+          <option class="dropdown-item" value="" selected>All</option>
+          <option *ngFor="let subject of subjectList" class="dropdown-item"  value={{subject}}>{{subject}}</option>
+        </select>
+        <select class="form-control" [(ngModel)]="languageFilter"  (change)="onLanguageChange($event)" name="language">
+          <option class="dropdown-item" value="" selected>English</option>
+          <option class="dropdown-item" value="1" >Hindi</option>
+      
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="row">
+    <div *ngFor="let video of videoArray" class="col-md-3">
+      <div class="card" style="cursor:pointer" (click)="openSubscription(video)">
+        <div class="image">
+          <img src="{{video.snippet?.thumbnails?.medium?.url}}" />
+        </div>
+        <div class="card-inner">
+          <div class="header">
+            <h5>{{video.snippet?.title}}</h5>
+            <h6>{{video.snippet?.description}}</h6>
+        </div>
+        <div class="content">
+          <p>Live At {{video.snippet?.scheduledStartTime | date:'short'}}</p>
+        </div>
+          </div>
+      </div>
+     
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal for First Time For Student -->
+<button type="button" #openModal class="btn btn-primary d-none" data-toggle="modal" data-backdrop="static" data-target="#studentModal">Open modal</button>
+
+<div  class="modal fade" id="studentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Academic Details</h5>
+        <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button> -->
+      </div>
+      <div class="modal-body">
+        <form #academicform="ngForm"> 
+          <div class="form-group">
+            <input type="text" [(ngModel)]="academicDetails.name" #name="ngModel" name="name" class="form-control" placeholder="Enter Your Name" required>
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-6">
+                <select class="form-control" [(ngModel)]="academicDetails.board" name="board" required>
+                  <option value="" disabled>Select Board</option>
+                  <option *ngFor="let board of boardList" class="dropdown-item"  value={{board}}>{{board}}</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <select class="form-control" [(ngModel)]="academicDetails.class" name="class" required>
+                  <option value="" disabled>Select Class</option>
+                  <option *ngFor="let class of classList" class="dropdown-item"  value={{class}}>{{class}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+        <button type="button" class="btn btn-primary" data-dismiss="modal" [disabled]="academicform.invalid" (click)="addAcademic(academicform)">Add</button>
+      </div>
+    </div>
+  </div>
+</div>

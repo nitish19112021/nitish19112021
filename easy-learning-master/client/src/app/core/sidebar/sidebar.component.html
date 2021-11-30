@@ -1,0 +1,74 @@
+<div class="sidebar-profile d-flex flex-column justify-content-center pt-5 pb-3">
+    <!-- <div class="picture-wrapper mb-4">
+      <div class="user-picture m-auto">
+        <img src="./assets/img/user.jpg" class="img-fluid" alt="">
+      </div>
+    </div> -->
+    <!-- <div class="profile-details text-center pb-4">
+      <p class="mb-0 text-uppercase name">Jhon Doe</p>
+      <small class="text-uppercase role">Administrator</small>
+    </div> -->
+  </div>
+  <nav *ngIf="currentRole=='admin'" class="navbar navbar-expand-lg navbar-light">
+    <ul class="navbar-nav flex-column">
+      <li class="nav-item active" >
+        <a class="nav-link" href="#" routerLink="/admin"><i class="fa fa-tv mr-2"></i><span>Dashboard</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/admin/ct-m"><i class="fa fa-tv mr-2"></i><span>Content Management</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/admin/cm"><i class="fa fa-tv mr-2"></i><span>Course Management</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/admin/live"><i class="fa fa-tv mr-2"></i><span>Live Classes Management</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/admin/sm"><i class="fa fa-tv mr-2"></i><span>Student Management</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/admin/tm"><i class="fa fa-tv mr-2"></i><span>Teacher Management</span></a>
+      </li>
+    </ul>  
+  </nav>
+
+  <nav *ngIf="currentRole=='teacher'" class="navbar navbar-expand-lg navbar-light">
+    <ul class="navbar-nav flex-column">
+      <li class="nav-item active" >
+        <a class="nav-link" href="#" routerLink="/teacher/dashboard"><i class="fa fa-tv mr-2"></i><span>Dashboard</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/teacher/live"><i class="fa fa-tv mr-2"></i><span>Live Classes</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/teacher/library"><i class="fa fa-tv mr-2"></i><span>Teacher library</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/teacher/courses"><i class="fa fa-tv mr-2"></i><span>Teacher Courses</span></a>
+      </li>
+    </ul>  
+  </nav>
+
+  <nav *ngIf="currentRole=='student'" class="navbar navbar-expand-lg navbar-light">
+    <ul class="navbar-nav flex-column">
+      <li class="nav-item active" >
+        <a class="nav-link" href="#" routerLink="/student"><i class="fa fa-tv mr-2"></i><span>Dashboard</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/student/live"><i class="fa fa-tv mr-2"></i><span>Live Classes</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/student/courses"><i class="fa fa-tv mr-2"></i><span>My Courses</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/student/library"><i class="fa fa-tv mr-2"></i><span>My Library</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/student/myteacher"><i class="fa fa-tv mr-2"></i><span>My Teacher</span></a>
+      </li>
+      <li class="nav-item" >
+        <a class="nav-link" href="#" routerLink="/student/test"><i class="fa fa-tv mr-2"></i><span>Test</span></a>
+      </li>
+      
+    </ul>  
+  </nav>

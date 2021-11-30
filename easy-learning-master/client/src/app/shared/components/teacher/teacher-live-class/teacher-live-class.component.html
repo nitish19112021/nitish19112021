@@ -1,0 +1,44 @@
+<div class="container">
+    <div class="card-body">
+        <div class="table-responsive-md">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">Class</th>
+                <th scope="col">Subject</th>
+                <th scope="col">Board</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let video of videoArray; let i=index">
+                <th scope="row">
+                <td>{{video.t}}</td>
+                <td>{{video.d}}</td>
+                <td>{{video.board}}</td>
+                <td>{{video.snippet?.scheduledStartTime | date}}</td>
+                <td>{{video.snippet?.scheduledStartTime | date:'shortTime' }}</td>
+                <td><button (click)="openLive(video)" class="btn btn-primary">Go Live</button></td>
+                <!-- <td>
+                  <a class="btn btn-sm btn-outline-lightning rounded-0 mr-2 ">
+                    <i class="far fa-edit"></i>
+                  </a>
+                  <a class="btn btn-sm btn-outline-lightning rounded-0">
+                    <i class="far fa-trash-alt"></i>
+                  </a>
+                </td> -->
+              </tr>
+
+            </tbody>
+          </table>
+
+        </div>
+        <!-- <div id="pagination">
+          <pagination-controls (pageChange)="p=$event"></pagination-controls>
+        </div> -->
+      </div>
+</div>
+<ngx-spinner bdColor = "rgba(36,15,72,0.8)" size = "medium" color = "#fff" type = "ball-climbing-dot" [fullScreen] = "true"><p style="color: white" > Loading... </p></ngx-spinner>
