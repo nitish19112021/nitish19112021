@@ -18,7 +18,6 @@ router.post('/addTeacher', (req, res, next) => {
     catch (err) {
         return next(err)
     }
-
 });
 
 //  get All Teachers
@@ -34,9 +33,7 @@ router.get('/getAllTeacher',auth, (req, res, next) => {
     catch (err) {
         return next(err)
     }
-
 });
-
 // add admin
 router.post('/addAdmin', (req, res, next) => {
     const adminDetails = req.body;
