@@ -1,8 +1,7 @@
-
 const jwt = require('jsonwebtoken');
 const verifytoken = (req,res,next) =>{
     const token = req.body.token || req.query.TOKEY_KEY || req.headers['x-access-token'];
-    console.log(token)
+    
     if(!token){
         return res.json({status:false,message:"token is required for login"})        
     }
