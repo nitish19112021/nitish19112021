@@ -1,23 +1,27 @@
 //signup for user
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt')
-// const cart = require("../cart/cart.model")
+const productModel = require('../product/productModel');
+
 
 const Schema = mongoose.Schema;
-const userSchema = new Schema({
+const userSchema = new Schema({    
     name:String,
     email:{
         type:String,
         required:true,
         unique:true
     },
-    password:String,    
+    password:String,
     mobile:Number,
     isAdmin:{
         type:Boolean,
         default:false
-    },
-    
+    },  
+        items:[{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"productdetail"
+        }]      
 },
 {timestamps:true}
 )
