@@ -12,13 +12,13 @@ router.post('/register', (req,res,next)=>{
         return res.status(201).send(result);
     },err=>{
         console.log("ttt",err);
-        return next(err)
+        res.end();
+        throw err;
     })
     }
     catch(err){
 return next(err)
     }
-
 });
 
 // student login
