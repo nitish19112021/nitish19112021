@@ -6,7 +6,6 @@ const config = require('../../config/main.config');
 const errorConfig = require('../../config/error.config');
 
 module.exports = {
-
     onRegister: (studentDetails) => {
         return new Promise((resolve, reject) => {
             if (studentDetails && studentDetails.mobileNo) {
@@ -258,7 +257,5 @@ module.exports = {
             }
         })
     },
-
-
 }
 
