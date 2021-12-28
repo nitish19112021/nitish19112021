@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter } from "@material-ui/icons";
+import { EmailOutlined, Facebook, Instagram, LocationOn, Phone, Twitter } from "@material-ui/icons";
 import React from "react";
 import styled from "styled-components";
 
@@ -62,21 +62,27 @@ const ListItem = styled.li`
 const Right = styled.div`
 flex:1;
 padding:20px;
-text-align:center;
-align-items:center;
-justify-content:center;
-`
-const Contact = styled.div`
-display:flex;
+width:30%;
+margin-left:40px;
 flex-wrap:wrap;
 align-items:center;
-justify-content:center;
+ justify-content:center;
+ text-align:center;
 `
+// const Contact = styled.div`
+// display:flex;
+// flex-wrap:wrap;
+// align-items:center;
+// justify-content:center;
+// `
 
 const ContactItem = styled.p`
-width:60%;
-
-
+    display:flex;
+    align-items:center;
+    justify-content:center;
+`
+const Payment = styled.img`
+height:20%;
 `
 
 const Footer = () =>{
@@ -113,12 +119,18 @@ const Footer = () =>{
                 </List>
             </Center>
             <Right>
-            <Title>Address:</Title>
-                <Contact>                    
+             <Title>Address:</Title>
+                                    
                     <ContactItem>
-                        plot no:abc, sector: abc, Noida, GB Nagar, U.P.
+                        <LocationOn style={{marginRight:"10px"}}/> plot no: abc, sector: abc 
                     </ContactItem>
-                </Contact>
+                    <ContactItem>
+                        <Phone style={{marginRight:"10px"}}/> 9911252629
+                    </ContactItem>
+                    <ContactItem>
+                        <EmailOutlined style={{marginRight:"10px"}}/> abc@chetu.com
+                    </ContactItem>
+                    <Payment src="https://www.kindpng.com/picc/m/48-480088_payment-method-credit-card-master-card-hd-png.png"/>
                 
             </Right>
         </Container>
