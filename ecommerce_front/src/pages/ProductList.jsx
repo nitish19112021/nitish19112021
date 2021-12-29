@@ -5,6 +5,8 @@ import Footer from "../component/Footer"
 import Navbar from "../component/Navbar"
 import Newsletter from "../component/Newsletter"
 import Products from "../component/Products"
+import {mobile} from '../responsive'
+
 
 const Container = styled.div`
 `
@@ -19,17 +21,20 @@ justify-content:space-between;
 
 const Filter = styled.div`
 margin:20px;
+${mobile({margin:"0px 14px", flexDirection:"column", display:'flex'})}
 `   
 
 const FilterText = styled.span`
     font-size:20px;
     font-weight:600;
     margin-right:25px;
+    ${mobile({marginRight:"0px"})}
 `
 const Select = styled.select`
     padding:10px;
     margin-right:20px;
     font-size:20px;
+    ${mobile({margin:"10px 0px"})}
 `
 
 const Option = styled.option`

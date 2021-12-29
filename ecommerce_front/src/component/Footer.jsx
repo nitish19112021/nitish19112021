@@ -1,9 +1,11 @@
 import { EmailOutlined, Facebook, Instagram, LocationOn, Phone, Twitter } from "@material-ui/icons";
 import React from "react";
 import styled from "styled-components";
+import {mobile} from '../responsive';
 
 const Container = styled.div`      
     display:flex;
+    ${mobile({height:'30vh'})}
 `
 const Left = styled.div`
     flex:1;
@@ -39,6 +41,7 @@ padding:20px;
 text-align:center;
 align-items:center;
 justify-content:center;
+${mobile({display:'none'})}
 `
 
 
@@ -76,6 +79,7 @@ justify-content:center;
 `
 const Payment = styled.img`
 height:20%;
+${mobile({height:'10%'})}
 `
 const Footer = () =>{
     return(

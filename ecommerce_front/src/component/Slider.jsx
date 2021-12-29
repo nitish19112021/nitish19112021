@@ -2,13 +2,14 @@ import { ArrowLeft, ArrowRight } from "@material-ui/icons";
 import React, { useState } from "react";
 import styled from "styled-components";
 import { sliderItems } from "../data";
-
+import{mobile} from '../responsive'
 const Container = styled.div`
 height:80vh;
 width:100%;
 display:flex;
 position:relative;
 overflow:hidden;
+ ${mobile({display:'none'})};
 `;
 
 const Arrow = styled.div`
