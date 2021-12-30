@@ -1,4 +1,5 @@
 const express = require("express")
+const cors = require('cors')
 const app = express()
 require('dotenv').config()
 const mongoose = require("mongoose");
@@ -8,6 +9,7 @@ const prodRoute = require("./routes/product")
 const orderRoute = require("./routes/order")
 const cartRoute = require("./routes/cart")
 app.use(express.json())
+app.use(cors())
 
 mongoose.connect(process.env.connection)
 .then(()=>{console.log("db connected successfulley")})

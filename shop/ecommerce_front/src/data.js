@@ -26,17 +26,20 @@ export const categories = [
     {
         id:1,
         img:"https://4.imimg.com/data4/AL/SN/MY-13188030/men-s-stylish-shirt-500x500.jpg",
-        title:"Shirt Style"
+        title:"Shirt Style",
+        cat:"coat"
     },
     {
         id:2,
         img:"https://www.rollingstone.com/wp-content/uploads/2020/05/Screen-Shot-2020-05-21-at-13.02.55-e1632255639909.png?w=428",
-        title:"T-Shirts"
+        title:"T-Shirts",
+        cat:"tshirt"
     },
     {
         id:3,
         img:"https://5.imimg.com/data5/WZ/FS/ZC/SELLER-27070405/41q7akebiel-500x500.jpg",
-        title:"light Jacket"
+        title:"light Jacket",
+        cat:"men"
     }
 ]
 

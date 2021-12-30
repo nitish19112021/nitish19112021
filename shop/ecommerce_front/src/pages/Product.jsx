@@ -116,7 +116,7 @@ const Product = ()=>{
                     <ImageContainer>
                         <Image src="https://m.media-amazon.com/images/I/51fS7KGb1ML._AC_UX679_.jpg"/>
                     </ImageContainer>
-                    <InfoContainer> 
+                    <InfoContainer>
                         <Title>Denim Jumpsuit</Title>
                         <Desc>soft and comfort cloth soft and comfort cloth soft and comfort cloth soft and comfort cloth soft and comfort cloth soft and comfort cloth </Desc>
                         <Price>$ 20</Price>

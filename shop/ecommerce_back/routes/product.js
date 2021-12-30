@@ -50,15 +50,28 @@ router.get("/findProduct/:id", async (req,res)=>{
 })
 
 
-// get All user
+// get All product
 
-router.get("/findAllProduct", verifyTokenAndAdmin, async (req,res)=>{
-    // const qNew = req.query.new;
-    // const qCategory = req.query.category
+router.get("/findAllProduct", async (req,res)=>{
+    const qNew = req.query.new;
+    const qCategory = req.query.category
     try{
-    //    const product = query ? await Product.find().sort({_id:-1}).limit(5) : await Product.find()
-        const product = await Product.find()
-        res.status(200).json(product )
+        let products;
+        if(qNew){
+            products =  await Product.find().sort({createdAt: -1}).limit(1);
+        }else if(qCategory){
+            products = await Product.find({
+                categories:{
+                    $in:[qCategory]
+                }
+            })
+        }else{
+            products = await Product.find()
+        }
+        res.status(200).json(products)
+
+        // const product = await Product.find()
+        // res.status(200).json(product )
 
     }catch(err){
         res.status(400).json(err)
