@@ -52,7 +52,8 @@ const ProductList = ()=>{
             [e.target.name]:value,
         });
     };
-    
+    // console.log(filters)
+    // console.log(sort)
     
     return(
         <Container>

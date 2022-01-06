@@ -17,7 +17,7 @@ mongoose.connect(process.env.connection)
 
 app.use("/api/user", userRoute)
 app.use("/api/auth", authRoute)
-app.use("/api/product", prodRoute)
+app.use("/api/products", prodRoute)
 app.use("/api/order", orderRoute)
 app.use("/api/cart", cartRoute)
 const PORT = process.env.PORT || 5000
