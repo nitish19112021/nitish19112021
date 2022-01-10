@@ -1,6 +1,8 @@
 import { Badge } from "@material-ui/core";
 import { Search, ShoppingCart } from "@material-ui/icons";
 import React from "react";
+import { useSelector} from 'react-redux';
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { mobile } from "../responsive";
 
@@ -59,8 +61,6 @@ const Logo = styled.h1`
 font-weight: bold;
 ${mobile({fontSize:'24px', marginLeft:"20px"})};
 `
-
-
 const Right = styled.div`
     flex:1;
     display:flex;
@@ -76,6 +76,8 @@ margin-left:25px;
 ${mobile({fontSize:'12px', marginLeft:"10px"})}
 `;
 const Navbar = () =>{
+    const quantity = useSelector(state=>state.cart.quantity)
+    
     return (
         <Container>
             <Wrapper>
@@ -86,16 +88,20 @@ const Navbar = () =>{
                 </SearchContainer>
                 </Left>
                 <Center>
-                    <Logo>ECOM</Logo>
+                    <Link to="/" style={{textDecoration:'none'}}>
+                         <Logo>ECOM</Logo>
+                    </Link>
                 </Center>
                 <Right>
                     <MenuItem>REGISTER</MenuItem>
                     <MenuItem>LOGIN</MenuItem>
-                    <MenuItem>
-                    <Badge badgeContent={1} color="primary">
-                        <ShoppingCart/>
-                    </Badge>
-                    </MenuItem>
+                    <Link to='/cart' >
+                        <MenuItem>
+                        <Badge badgeContent={quantity} color="primary">
+                            <ShoppingCart/>
+                        </Badge>
+                        </MenuItem>
+                    </Link>
                 </Right>
             </Wrapper>
             

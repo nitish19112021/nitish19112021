@@ -1,12 +1,15 @@
 import { Add, Remove } from "@material-ui/icons"
-import React from "react"
+import React, { useEffect, useState } from "react"
+import { useLocation } from "react-router-dom"
 import styled from 'styled-components'
 import Announcement from "../component/Announcement"
 import Footer from "../component/Footer"
 import Navbar from "../component/Navbar"
 import Newsletter from "../component/Newsletter";
 import {mobile} from '../responsive'
-
+import { publicRequest} from "../requestMethods"
+import { addProduct } from "../redux/cartRedux";
+import { useDispatch } from "react-redux"
 const Container = styled.div`
 
 `
@@ -108,43 +111,89 @@ border-radius:10px;
 
 
 const Product = ()=>{
+    const location = useLocation()
+    const id = location.pathname.split('/')[2];
+    
+
+    const [product, setProduct] = useState({});
+    //quantity
+
+    const [quantity, setQuantity] = useState(1);
+
+    //pic color
+
+    const [color, setColor] = useState("null");
+
+    //pic size
+
+    const [size, setSize] = useState("null");
+
+    const dispatch = useDispatch()
+
+
+    useEffect(()=>{
+        const getProduct = async ()=>{
+            try{
+                const res = await publicRequest.get("/products/findProduct/"+id)
+                setProduct(res.data)
+            }catch(err){
+                console.log("err",err)
+            }            
+        }
+        getProduct()
+    },[id])
+    const handleQuantity = (type) =>{
+        if(type === "desc"){
+           quantity > 1 && setQuantity(quantity-1)
+        }
+        else{
+            setQuantity(quantity+1)
+        }
+    }
+
+    const handleClick = ()=>{
+        dispatch(
+            addProduct({...product, quantity, color, size})
+            // addProduct({product, quantity, price:product.price * quantity})
+            )
+    }
+
     return(
         <Container>
             <Navbar/>
             <Announcement/>
                 <Wrapper>
                     <ImageContainer>
-                        <Image src="https://m.media-amazon.com/images/I/51fS7KGb1ML._AC_UX679_.jpg"/>
+                        <Image src={product.img}/>
                     </ImageContainer>
                     <InfoContainer>
-                        <Title>Denim Jumpsuit</Title>
-                        <Desc>soft and comfort cloth soft and comfort cloth soft and comfort cloth soft and comfort cloth soft and comfort cloth soft and comfort cloth </Desc>
-                        <Price>$ 20</Price>
+                        <Title>{product.title}</Title>
+                        <Desc>{product.desc}</Desc>
+                        <Price>{product.price}</Price>
                         <FilterContainer>
                             <Filter>
                                 <FilterTitle>Color</FilterTitle>
-                                <FilterColor color="black"/>
-                                <FilterColor color="darkblue"/>
-                                <FilterColor color="gray"/>
+                                {product.color?.map((c)=>(
+                                    <FilterColor color={c} key={c} onClick={()=>setColor(c)}/>
+                                ))}
                             </Filter>
                             <Filter>
                                 <FilterTitle>Size:</FilterTitle>
-                                <FilterSize>
-                                    <FilterSizeOption>XS</FilterSizeOption>
-                                    <FilterSizeOption>S</FilterSizeOption>
-                                    <FilterSizeOption>M</FilterSizeOption>
-                                    <FilterSizeOption>L</FilterSizeOption>
-                                    <FilterSizeOption>XL</FilterSizeOption>
+                                <FilterSize onChange={(e)=>setSize(e.target.value)}>
+                                    {product.size?.map((s)=>(
+                                        <FilterSizeOption size={s}>{s}</FilterSizeOption>
+                                    ))}
+                                   
                                 </FilterSize>
                             </Filter>
                         </FilterContainer>
                         <AddContainer>
                             <AmountContainer>
-                                <Remove/>
-                                <Amount>1</Amount>
-                                <Add/>
+                                <Remove onClick={()=>handleQuantity("desc")}/>
+                                <Amount>{quantity}</Amount>
+                                <Add onClick={()=>handleQuantity("asec")}/>
                             </AmountContainer>
-                            <Button>Add To Cart</Button>
+                            <Button onClick={handleClick}>Add To Cart</Button>
                         </AddContainer>
                     </InfoContainer>
                 </Wrapper>

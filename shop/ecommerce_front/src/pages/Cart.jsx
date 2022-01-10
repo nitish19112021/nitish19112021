@@ -4,7 +4,8 @@ import styled from "styled-components";
 import Announcement from "../component/Announcement";
 import Footer from "../component/Footer";
 import Navbar from "../component/Navbar";
-import {mobile} from '../responsive'
+import {mobile} from '../responsive';
+import { useSelector } from "react-redux";
 
 
 const Container = styled.div`
@@ -147,6 +148,9 @@ font-weight:500;
 
 
 const Cart = () =>{
+    
+
+    const cart = useSelector(state=>state.cart);
     return(
         <Container>
             <Navbar/>
@@ -163,71 +167,36 @@ const Cart = () =>{
                     </Top>
                     <Bottom>
                         <Info>
-                            <Product>
+                            {cart.products.map(product=>(
+
+                                <Product>
                                 <ProductDetails>
-                                    <Image src="https://m.media-amazon.com/images/I/51a8Uk5olfL._UL1100_.jpg"/>
+                                    <Image src={product.img}/>
                                     <Details>
-                                        <ProductName><b>Product:</b>Thunder Shoe</ProductName>
-                                        <ProductId><b>Id:</b>123584584852</ProductId>
-                                        <ProductColor color="black"/>
-                                        <ProductSize><b>Size:</b>37.5</ProductSize>
+                                        <ProductName><b>Product:</b>{product.title}</ProductName>
+                                        <ProductId><b>Id:</b>{product._id}</ProductId>
+                                        <ProductColor color={product.color}/>
+                                        <ProductSize><b>Size:</b>{product.size}</ProductSize>
                                     </Details>
                                 </ProductDetails>
                                 <PriceDetails>
                                     <ProductAmountContainer>
                                         <Add/>
-                                        <ProductAmount>2</ProductAmount>
+                                        <ProductAmount>{product.quantity}</ProductAmount>
                                         <Remove/>
                                     </ProductAmountContainer>
-                                    <ProductPrice>30</ProductPrice>
+                                    <ProductPrice>{product.price*product.quantity}</ProductPrice>
                                 </PriceDetails>
-                            </Product>
-                            <Hr/>
-                            <Product>
-                                <ProductDetails>
-                                    <Image src="https://us.123rf.com/450wm/nadyanadal/nadyanadal1707/nadyanadal170700017/82928123-men-s-shirts-set-folded-on-a-white-background-.jpg?ver=6"/>
-                                    <Details>
-                                        <ProductName><b>Product:</b>Thunder Shoe</ProductName>
-                                        <ProductId><b>Id:</b>123584584852</ProductId>
-                                        <ProductColor color="black"/>
-                                        <ProductSize><b>Size:</b>37.5</ProductSize>
-                                    </Details>
-                                </ProductDetails>                                
-                                <PriceDetails>
-                                    <ProductAmountContainer>
-                                        <Add/>
-                                        <ProductAmount>2</ProductAmount>
-                                        <Remove/>
-                                    </ProductAmountContainer>
-                                    <ProductPrice>30</ProductPrice>
-                                </PriceDetails>
-                            </Product>
-                            <Hr/>
-                            <Product>
-                                <ProductDetails>
-                                    <Image src="https://rukminim1.flixcart.com/image/714/857/ko0d6kw0/wallet-card-wallet/7/o/4/brown-gh1700-wallet-go-hide-original-imag2kayeh7xrvky.jpeg?q=50"/>
-                                    <Details>
-                                        <ProductName><b>Product:</b>Thunder Shoe</ProductName>
-                                        <ProductId><b>Id:</b>123584584852</ProductId>
-                                        <ProductColor color="black"/>
-                                        <ProductSize><b>Size:</b>37.5</ProductSize>
-                                    </Details>
-                                </ProductDetails>                                
-                                <PriceDetails>
-                                    <ProductAmountContainer>
-                                        <Add/>
-                                        <ProductAmount>2</ProductAmount>
-                                        <Remove/>
-                                    </ProductAmountContainer>
-                                    <ProductPrice>30</ProductPrice>
-                                </PriceDetails>
-                            </Product>
+                                </Product>
+                                ))
+                            }
+                            <Hr/>                            
                         </Info>
                         <Summary>
                             <SummaryTitle>Order Summary</SummaryTitle>
                             <SummaryItem>
                                 <SummaryItemText>SubTotal</SummaryItemText>
-                                <SummaryItemPrice>80</SummaryItemPrice>
+                                <SummaryItemPrice>{cart.total}</SummaryItemPrice>
                             </SummaryItem>
                             <SummaryItem>
                                 <SummaryItemText>Estimate Shipping</SummaryItemText>
@@ -239,7 +208,7 @@ const Cart = () =>{
                             </SummaryItem>
                             <SummaryItem type="total">
                                 <SummaryItemText>Total</SummaryItemText>
-                                <SummaryItemPrice>80</SummaryItemPrice>
+                                <SummaryItemPrice>{cart.total}</SummaryItemPrice>
                             </SummaryItem>
                             <Button>CheckOut Now</Button>
                         </Summary>
