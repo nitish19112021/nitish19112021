@@ -1,13 +1,15 @@
 const { timeStamp } = require("console");
 const mongoose = require("mongoose");
-
-// const Schema = mongoose.Schema();
-
-// const userSchema= new Schema({
-
-// })
+const passportLocalMongoose = require("passport-local-mongoose");
+const { stringify } = require("querystring");
 
 const userSchema = new mongoose.Schema({
+    firstname : {
+        type:String
+    },
+    lastname : {
+        type:String
+    },
     username : {
         type:String
     },
@@ -16,12 +18,24 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type:String
+    },  
+    mobile:{
+        type:Number
+    },    
+    otp:{
+        type:String
     },
     isAdmin:{
         type:Boolean,
         default:false
     },
-    
+    accessToken:{
+        type:String,
+    },
+    refreshToken:{
+        type:String,
+    }
 },{timestamps:true})
 
-module.exports = mongoose.model("User",userSchema)
+userSchema.plugin(passportLocalMongoose);
+module.exports = mongoose.model("User", userSchema);

@@ -8,10 +8,10 @@ const Container = styled.div`
     display:flex;
     padding:20px;
     flex-wrap:wrap;
-    justify-content:space-between;    
+    justify-content:space-between;
 `
 const Products = ({cat,filters,sort})=>{
-    console.log(cat,filters,sort)
+       
     const[products,setProducts] = useState([]);
     const[filteredProducts, setFilteredProducts] = useState([])
     
@@ -37,7 +37,7 @@ const Products = ({cat,filters,sort})=>{
         )
         )
 },[products,cat, filters])
-console.log(filteredProducts)
+
 
 useEffect(()=>{
     if((sort ==="newest")){

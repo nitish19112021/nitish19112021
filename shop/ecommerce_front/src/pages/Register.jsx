@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import {mobile} from '../responsive'
+import { register } from "../redux/apiCalls";
+import { useDispatch, useSelector } from "react-redux";
+// import message from "../pages/SuccessMess"
+
+import { useNavigate } from "react-router-dom";
+
 const Container = styled.div`
     width:100vw;
     height:100vh;
@@ -52,20 +58,42 @@ margin:auto;
     color:lightgray;
 }
 `
+const Error = styled.span`
+color:red;
+`
 const Register = () =>{
+    const [firstname, setFirstname] = useState('');
+    const [lastname, setLastname] = useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmpassword, setConfirmpassword] = useState('');
+    const dispatch = useDispatch();
+    const {isFetching, error} = useSelector((state)=> state.register)
+
+    let navigate = useNavigate();
+    
+    const handleclick = (e) =>{
+        
+        e.preventDefault();
+        register(dispatch, {firstname,lastname,username,email,password,confirmpassword})
+        navigate("/successmess")
+
+    }
     return(
         <Container>
             <Wrapper>
                 <Title>Create An Account</Title>
                 <Form>
-                    <Input placeholder="name"/>
-                    <Input placeholder="lastname"/>
-                    <Input placeholder="username"/>
-                    <Input placeholder="email"/>
-                    <Input placeholder="password"/>
-                    <Input placeholder="confirm password"/>
+                    <Input name="fisrtname" placeholder="First Name" onChange={(e)=>setFirstname(e.target.value)}/>
+                    <Input name="lastname" placeholder="Last Name" onChange={(e)=>setLastname(e.target.value)}/>
+                    <Input name="username" placeholder="User Name" onChange={(e)=>setUsername(e.target.value)}/>
+                    <Input name="email" placeholder="Email" onChange={(e)=>setEmail(e.target.value)}/>
+                    <Input name="password" placeholder="Password" onChange={(e)=>setPassword(e.target.value)}/>
+                    <Input name="confirmpassword" placeholder="Confirm Password" onChange={(e)=>setConfirmpassword(e.target.value)}/>
                     <Agreement>Creating and account with all privacy</Agreement>
-                    <Button>CREATE</Button>
+                    <Button onClick={handleclick} disabled={isFetching}>CREATE</Button>
+                    {error && <Error>You are not Registered..</Error>}
                 </Form>
             </Wrapper>
 

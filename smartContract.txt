@@ -1,0 +1,468 @@
+smart contract
+block chain
+solidity
+meta mask(walet)
+token erc20
+token erc721
+locally integrate: truffle (library)
+web3JS(library)
+
+
+ICO(initial Coin Offering):
+IPO()
+
+
+What is smart contract ?
+
+Smart contract is smiple a program store on blockchain that runs when predetermine coditions are met.
+
+What is blockchain ?
+
+block chain is a technology that is distributed immuatable ledger which is completely transparent.
+a) Distributed: means information is distributed through all the network computer.
+b) immutable: data can not be delete or edit.
+c) ledger: block
+d) transparent : all system has ledger
+
+and it is decenterlised system
+
+what is block?
+
+block is data structures with the blockchain database where transaction data in a crypto currency
+ is permanantly store.
+block record the transaction but not validate by network.
+
+Hashing Algorithm: SHA 256
+
+previous hash 
+block hash
+
+merged with timeline?
+
+blockchain decenterlized
+
+
+what is ethereum?
+smart contract
+dapps
+evm and gas 
+dao 
+hard and soft fork
+dao attacks
+ico 
+alt coins
+
+what is Ethereum?
+bitcoin 2008
+
+ethereum founded in 2013 by founder vatalic butenik, is a platform based on blockchain technology.
+
+ethereum is open-source blockchain based-plateform
+bitcon provide bitcoin
+ethereum provide ether
+
+ethereum is p2p network based. it has not a client or server
+
+systems all over the network is called nodes.
+
+types of  nodes:
+a) full node : means this node can do transition and validation itself
+b) light node : do only the transition. means stores only the block header. depends on full node.
+c) archive node : it is like a full node and it has all history of all node
+		stores everything kept in the full node and built an archive of historical data.
+		require terabites of diskspace
+
+ethereum Accounts : Eherium account is the entity with an ether(ETH) balance that can send and
+ receive transaction on ethereum.
+
+Types of ethereum account:
+a) Externally Owned Account (EOA) : 	when we create a wallet 
+					we can do send transaction
+					we can do received transaction
+					create smart contract
+b) Contract Account (CA) : when smart contract is deployed on blockchain 
+				then Contract Account is created and it has unique ID.
+
+	Difference beween EOA(Externally owened Account) and CA(Contract Account)
+
+	EOA:
+	1. private key is needed.
+	2. controlled by human
+	3. no gas is associated
+	4. has a unique address.
+	5. holds ETH balance
+	
+	CA:
+	1. no private or public key is needed.
+	2. controlled by contract code
+	3. gas is associated
+	4. has unique key
+	5. has ETH balance
+
+what is smart contract?
+it is program that run on ethereum blockchain. which is written in solidity programming language.
+contract means one person gave 10 ruppes to another person for a choclate.
+we can say it is contract
+smart  because we write in program is called smart
+
+why we are not writtin smart contract in bitcoin
+we always knows that blocks is distributed immuatable ledger. 
+it has no turing. can't write a logic into the block.
+
+but smart contract has turing.
+
+Decenterlized Application:
+centerlized app : facebook, youtube they has centersized server and it has client
+Decenterlized app means dapps are digital app that exist and run on blockchain or  peer to peer network of computer instead of single computer.
+
+Ethereum Virtual Machine:
+when we create a dapp that it does't run directly on system. it run first on 
+Ethereum Virtual Machine.
+
+Ethereum Gas:
+to do operation in smart contract we need Ethereum Gas.
+
+gas price
+1 gwe = 10^-9 ether
+gas limit 21000 unit
+
+transaction
+DAO(decenterlized autonomous organization)
+DAO ATTACK JUNE 17 2016
+
+HARD FORK: it relates to blockchain technology that is a radical change
+ to a network protocol that makes previously invalid blocks and 
+transaction valid or vice versa.
+
+means upgrade blockchain technology.
+
+after dao attack ethereum divide into two part.
+                                                            it will split after 1919999 block
+ETHEREUM CLASSIC : old ethereum community
+
+ETHEREUM : new ethereum community
+
+
+segwit: we have a problem in bitcoin we only generate only 1MB block it produce
+problem, when transition is lot that it slow down the network. 
+
+In segwit is the process to increacse the size of block by removing the signature
+data from transaction
+
+
+Soft Fork: it has single chain
+Hard Fork : Chain split into two chain.
+
+
+SOLIDITY:
+
+IDE(integrated development environment)
+COMILIATION PROCESS
+CONTRACT DEPLOYEMENT
+SOLIDITY
+VARIABLES
+FUNCTIONS
+DATA TYPES
+STORAGE 
+CONTRACT BALANCING
+ACCESS MODIFIERS
+
+
+NFT token Ether(non-fungible token): is a non interchangable unit of data store on blockchain
+
+
+what is solidity?
+Solidity is programing language.
+
+compilation
+
+contract source .sol
+solidity compiler 
+
+1) ABI (application binary interface)
+2) BYTE Code : that run on ethereum block chain
+byte code file has object in hash format and opcode.
+
+some important points 
+	1) contract bytecode is public in readable form
+	2) contract doesn't have to be public
+	3) bytecode is immutable
+	4) ABI act as a bridge between application and smart contract
+	5) ABI and Bytecode can't generate without source code.
+
+
+
+bytecodes
+Opcode
+
+MainNet and TestNet(main network and test network):
+
+Mainnet : used for actual transition with value
+	mainnet network id : 1
+
+TestNet: used for testing smart contracts and decentralized app.
+	testnet have network id : 3,4 and 42
+
+masterether.com
+https://www.rinkeby.io/#stats 	test ether
+https://etherscan.io/ 		original ether
+
+Metamask : A crypto walet & gateway to blockchain apps
+
+million install boat demise trend audit festival approve brick master length mixed
+
+Rinkeby is fake ether generate site
+
+Remix Ethereum IDE
+
+JVM (javascript virtual machine)
+transaction will be executed in a sandbox
+own memory blockchain.
+iteal for testing
+
+Injected Web3:
+Deploy a contract or run a transaction on Ethereum main or test net
+
+Web3 provider:
+Connect to a remote node and Ethereum Client.
+
+EVM ()
+
+
+Remix IDE 
+compilation process
+mainnet
+testnet 
+Metamask
+rinkeby faucet
+contract deployment
+
+
+What is Solidity:
+
+1. High-level Statically typed programming language.
+2. with solidity you can create contract for uses such as voting, crowdfunding, blind auctions and 
+3. multi-signature wallets.
+4. case sensitive
+
+solididy  is statically typed language which all declared are decided on complilation time.
+
+First Contract or program:
+
+//SPDX-License-Identifier: GPL-3.0  //this is Machine-readable license specifiers 
+
+pragma >=0.5.0 <0.9.0;
+
+//contract is class name keyword and Identity is classname
+
+contract Identity{
+	string name = "abc"		
+	uint age = 17;
+	
+	function getName() view public returns (string abc){
+		return abc;
+	}	
+	function getAge() view public returns (){
+		return age;
+	}
+}
+
+view means : did not change into variable
+
+/////////or//////////////
+via constructor
+
+contract Identity{
+	string name;
+	uint age;
+	
+	constructor () public{
+		name="abc";
+		age=18		
+	}
+	function getName() view public returns(string memory){
+		return name;
+	}
+	function getAge() view public returns(uint){
+		return age;	
+	}
+}
+
+
+//State variable:
+
+variable declared inside the contract level called state variable
+
+Property of state varible:
+
+it stored permanantly stored in contract storage in blockchain
+we have to pay amount of Gas for state variable.
+there is no null and undefined
+
+////////////////////////
+Public function:
+
+if we wirte public keyword in variables or function then it will auto
+create get function
+
+//can't initialized like that:
+
+uint a;
+a = 10   //it is wrong
+
+// initialized
+
+uint  a = 8;
+
+or 
+
+uint a;
+constructor(){
+a=9;
+}
+
+or
+// through setter function
+
+uint a;
+function setSum() public{
+	a = 9;
+}
+
+
+//local variable
+
+declared in function scope
+stored in stack storage
+
+e.g:
+contract Local{
+    function setLocal() pure public returns(uint){
+        uint age = 10;
+        return age;
+    }
+}
+
+pure : defines that it variable store in stack storage 
+
+
+by default some variable has storage scope store in memory
+
+summarise:
+
+declared inside function and are kept on the stack, not a storage.
+do not cost gas
+there are some type reference to storage by default.
+like: string
+memory keywork can't used in contract level.
+
+/////////////////////////////////
+
+Function Setter and Getter:
+
+function has two type: pure and view
+view : if did not change state variable 
+pure : 
+
+function getter() public view returns(uint){
+	return age;
+}
+
+public : visiblity (means its privte, external or internal)
+view : if we are not modify the value of state variable, only get this
+	variable.
+returns : which data type will get
+
+getter() : used to display the variable
+setter() : used to set the state variable
+
+function setter() public{
+	age = age+1
+}
+
+/////////
+state variable : store in storage
+local varaile : are inside a function and store in stack
+
+function setAge() pure public returns(uint){
+       uint age = 22;
+       return age;          
+   }
+
+	string bydefault storage = scope
+
+//function
+
+//function with argument
+
+
+//function with argument
+// contract func{
+//     uint age = 23;
+//     function getAge() view public returns(uint){
+//         return age;
+//     }
+//     function setAge() public{
+//         age = 55;
+//     }
+// }
+
+
+/////////////////////////////////
+// if you make a state variable public then don't use getter function 
+	it will automatically generate a getter function
+
+
+////////////////////////////////
+
+constructor :
+use to initialize state variable
+use to decide the contract owner
+
+constructor intialize the variable value only once.
+
+
+***********************
+contructor execute once
+you can create only one constructor and that is optional
+default constructor is created by the compiler 
+
+
+integers:
+
+int    uint(unsigned integer (can not be minus))
+
+range :
+int/int8 : -128 to +127
+int16
+int32
+
+uint16
+uint32
+
+////////////////////////
+
+array
+
+fixed typed array
+
+// declared the size at the time of compilation
+
+e.g: uint[6] public arr = [10,22,23,24,25,25];
+
+// set array and its length
+
+contract testArray{
+    uint[4] public arr = [10,20,30,40];
+    function setArray(uint index, uint value) public{
+        arr[index] = value;
+    }
+    function length() public view returns(uint){
+        return arr.length;
+    }
+}
+
+
+dynamic typed array 
+
+

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { login } from "../redux/apiCalls";
 import {mobile} from '../responsive'
@@ -47,7 +48,7 @@ const Button = styled.button`
         cursor:not-allowed;
     };
 `;
-const Link = styled.a`
+const Links = styled.a`
 margin:5px 0px;
 font-size:15px;
 text-decoration:underline;
@@ -60,6 +61,7 @@ const Login = () =>{
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("")
     const dispatch = useDispatch();
+    
     const {isFetching, error} = useSelector((state) => state.user)
 
     const handleClick = (e) =>{
@@ -71,12 +73,18 @@ const Login = () =>{
             <Wrapper>
                 <Title>Sign In</Title>
                 <Form>
-                    <Input placeholder="Enter UserName" onChange={(e)=>setUsername(e.target.value)}/>
-                    <Input placeholder="Enter Password" type="password" onChange={(e)=>setPassword(e.target.value)}/>
+                    <Input placeholder="Enter UserName"
+                     onChange={(e)=>setUsername(e.target.value)}/>
+                    <Input placeholder="Enter Password" type="password"
+                     onChange={(e)=>setPassword(e.target.value)}/>
                     <Button onClick={handleClick} disabled={isFetching}>LOGIN</Button>
                     {error && <Error>Something went wrong...</Error>}
-                    <Link>Forgot Password</Link>
-                    <Link>Create A New Account</Link>
+                    <Link to="/forgetPass">
+                    <Links>Forgot Password</Links>
+                    </Link>                    
+                    <Link to="/register">
+                    <Links>Create A New Account</Links>
+                    </Link>
                 </Form>                
             </Wrapper>            
         </Container>

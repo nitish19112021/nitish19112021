@@ -6,6 +6,7 @@ import Footer from "../component/Footer";
 import Navbar from "../component/Navbar";
 import {mobile} from '../responsive';
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 
 const Container = styled.div`
@@ -210,7 +211,9 @@ const Cart = () =>{
                                 <SummaryItemText>Total</SummaryItemText>
                                 <SummaryItemPrice>{cart.total}</SummaryItemPrice>
                             </SummaryItem>
-                            <Button>CheckOut Now</Button>
+                            <Link to="/Stripe">
+                                <Button>CheckOut Now</Button>
+                            </Link>
                         </Summary>
                     </Bottom>
                 </Wrapper>
