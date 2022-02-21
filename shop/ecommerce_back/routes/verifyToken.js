@@ -12,7 +12,7 @@ const verifyToken = (req,res,next)=>{
             next()
         })
     }else{
-        return res.status(400).json("you are not authorized")
+        return res.status(400).json("token is not valid")
 
     }
 }

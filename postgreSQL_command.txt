@@ -1,0 +1,87 @@
+to run postgresql:
+
+open this path and type command:
+
+C:\Program Files\PostgreSQL\12\bin>psql -U postgres
+
+to see all database : \l or \l+
+
+create database : create database testdb(database name)
+
+use database : \c testdb(database name)
+
+drop database: drop database testdb(database)
+
+create table: create table emp(id int, ename varchar(20), esal varchar(20));
+
+see table: \d 
+
+see table sturctre: \d emp
+
+create table emp(
+testdb(# id int,
+testdb(# ename varchar(20),
+testdb(# date_of_birth date not null);
+
+insert into emp(id, ename, date_of_birth) values(1, 'aaa', date '1992-09-07');
+-------------------------------------------------------------------
+
+what is mongoose ODM(Object data modeling):
+if manage the relationship between data, provide schema validation and is used 
+	to translate object in code and represention of object in mongodb.
+As we know that mongo is schema less database.
+
+what is schema?
+schema is a structure of document in database(means shape of document).
+
+like that mongoose schema is document data structure.
+
+what is model? 
+
+model is a higher order constructor that takes a schema and create a instance of document 
+	equivalent to record
+-----------------------------------------------------------------
+
+What is sequelize?
+
+Sequelize is promise based node js orm(object relational mapping) for postgres, mysql, mariadb and many more
+
+using Sequelize we can write database query by using javascript instead of sql query.
+
+what is ORM(object relation mapping) ?
+
+object relation mapping is a technique for accessing a relational database using
+	object oriented programming language.
+orm is a way of javascript program to manage the database data by mapping the tables to class
+	and instance of class.
+
+
+
+ALTER TABLE users RENAME COLUMN createdat TO createdAt;
+
+
+CREATE TABLE users (
+	id serial PRIMARY KEY,
+	username VARCHAR ( 50 ) UNIQUE NOT NULL,
+	password VARCHAR ( 50 ) NOT NULL,
+	email VARCHAR ( 255 ) UNIQUE NOT NULL
+);
+
+
+//connect database:
+
+//sequeliae with postgres sql
+
+const sequelize = new Sequelize("database name", "username of database", ""password of database,{
+"host":"localhost",
+"dialect":"postgres",
+"pool":{max:5, min:0,idle:10000}
+})
+
+//check sequlize is create with database
+
+sequelize.authenticate().then(()=>{
+	console.log("connected.")
+}).catch((err)=>{
+	console.error("err"error)
+})
