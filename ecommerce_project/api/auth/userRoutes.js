@@ -15,6 +15,7 @@ router.post('/addUser',(req,res)=>{
     //joi validation
     const { error } = joivalidate.validate(req.body)
     if(error) return res.json(error.details[0].message)
+    
     const usersdataSignup = new userSignUp({
         name:req.body.name,
         email:req.body.email,

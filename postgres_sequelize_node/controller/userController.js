@@ -1,5 +1,6 @@
 // const userModel = require('../model/user')
 const db = require('../config/database');
+const bcrypt = require('bcrypt')
 const userModel = db.users;
 module.exports = {
     register:async (req,res)=>{
@@ -27,6 +28,31 @@ module.exports = {
         }catch(err){
             if(err){
                 console.log(err)                
+            }
+        }
+    },
+    userLogin:async(req,res)=>{
+        try {            
+           await userModel.findOne({where:{username:req.body.username}})
+            .then((user)=>{
+                console.log(user)
+                    if(user && bcrypt.compare(req.body.password, user.password)){
+                        
+                                res.send({status:200, message:`login successfully`, user:user})
+                        
+                    }else{
+                        res.send({status:401, message:'something happened wrong'})
+                    }
+            }).catch((err)=>{
+                if(err){
+                    console.log('login err', err);
+                    res.send({status:401, message:`username is incorrect ${err}`})
+                }
+            })
+        } catch (error) {
+            if(error){
+                console.log("login error", error)
+                res.send({status:401, message:`something wrong ${error}`})
             }
         }
     },

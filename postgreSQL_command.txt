@@ -1,3 +1,67 @@
+postgres migration
+
+1. npm install sequelize-cli
+
+2. npm install sequelize
+
+now you can use npx 
+
+3.npx sequlize-cli init
+
+4. set database connection
+
+5.create migration/(or create table)
+
+npx sequelize-cli model:generate --name users --attributes name:string, email:string
+
+6. execute migrate
+
+npx sequelize-cli db:migrate 
+
+suppose you one or more migraton tabe
+
+if you run 
+
+npx sequelize-cli db:migrate  // it will take all migrations into database
+
+7. undo migrate last migration table
+
+npx sequelize-cli db:migrate:undo   //undo last migration
+npx sequelize-cli db:migrate:undo:all //undo all migration
+npx sequelize-cli db:migrate:undo --name migration_name.js   //for particular migration.
+
+
+8. check status of migration
+
+npx sequelize-cli db.migrate.status
+
+9. create seeder
+
+npx sequelize-cli seed:generate --name user-add
+
+enter data through query interface in seed file.
+
+10. npx sequelize-cli db:seed:all	// for all seed.js file
+
+	npx sequelize-cli db:seed --name seed.js	// for particular js
+
+11. undo seed
+ 	npx sequelize-cli db:seed:undo
+
+
+
+
+
+restore database from backup file:
+
+pg_restore -U postgres -d caravelacaficultordevdb -1 "D:\project\CaravelaLimited-FBAG\doc\arabicatest.backup"
+
+
+https://github.com/caraveladev1/Arabica
+login-- pankajk4@chetu.com
+pwd:- pankajk4@901
+
+
 to run postgresql:
 
 open this path and type command:
