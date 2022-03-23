@@ -1,0 +1,2204 @@
+app.js
+
+import express from 'express'
+import path from 'path'
+import cookieParser from 'cookie-parser'
+import logger from 'morgan'
+import cors from 'cors'
+//import dbConnection from './connection/db';
+import certificationRouter from './routes/certification.router'
+import civilStatusRouter from './routes/civil_status.router'
+import coffeeVarietyRouter from './routes/coffee_variety.router'
+import countryRouter from './routes/country.router'
+import departmentRouter from './routes/department.router'
+import dniTypeRouter from './routes/dni_type.router'
+import dryingMethodRouter from './routes/drying_method.router'
+import familyMemberRouter from './routes/family_member.router'
+import farmRouter from './routes/farm.router'
+import fermentationTypeRouter from './routes/fermentation_type.router'
+import genderRouter from './routes/gender.router'
+import indexRouter from './routes/index.router'
+import lotRouter from './routes/lot.router'
+import municipalityRouter from './routes/municipality.router'
+import plotRouter from './routes/plot.router'
+import processTypeRouter from './routes/process_type.router'
+import relationshipRouter from './routes/relationship.router'
+import renovationTypeRouter from './routes/renovation_type.router'
+import scholarshipRouter from './routes/scholarship.router'
+import surveyRouter from './routes/survey.router'
+import surveyTypeRouter from './routes/survey_type.router'
+import userRouter from './routes/user.router'
+import userTypeRouter from './routes/user_type.router'
+import visitTypeRouter from './routes/visit_type.router'
+import visitRouter from './routes/visit.router'
+import answer_survey from './routes/answer_survey.router'
+import tickets from './routes/tickets.router'
+import plannerMaster from './routes/planner_master.router'
+import userWebrouter from './routes/userWeb.router'
+import ExcelRouter from '././routes/read-excel.router'
+import PlannerFloweringRouter from '././routes/planner_flowering.router'
+import SynchronizerRouter from '././routes/synchronizer.router'
+import OptionsListRouter from '././routes/optionslist.router'
+
+import RoleRouter from '././routes/role.router'
+import PermissionRouter from '././routes/permission.router'
+import AssociationsRouter from '././routes/associations.roter'
+import ElearningRouter from '././routes/elearning.router'
+import CostCategoryRouter from '././routes/costCategory.router'
+import CostHeadRouter from '././routes/costHead.router'
+import FormulaHeadRouter from '././routes/formula_head.router'
+import ConfiguracionRouter from '././routes/configuration.router'
+import PointRouter from '././routes/Point.router'
+
+
+import elearningV2Router from '././routes/elearningv2.router'
+import questionnaireRouter from '././routes/questionnaire.router'
+import questionnaireAnswerRouter from '././routes/questionnaire_answer.router'
+import questionnaireTypeRouter from '././routes/questionnaire_type.router'
+
+
+
+const errorMiddleware = require('./midleware/errors')
+var admin = require("firebase-admin")
+var serviceAccount = require("./arabica-peca-firebase-adminsdk-y9bbp-e8d0ea52b1.json")
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://arabica-peca.firebaseio.com"
+})
+
+const app = express()
+app.use(cors())
+app.use(logger("dev"))
+app.use(express.json({ limit: "50mb" }))
+app.use(express.urlencoded({ extended: false, limit: "50mb" }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, "public")))
+
+// Routes
+app.use('/api', indexRouter)
+app.use('/api/certification', certificationRouter)
+app.use('/api/civil_status', civilStatusRouter)
+app.use('/api/coffee_variety', coffeeVarietyRouter)
+app.use('/api/country', countryRouter)
+app.use('/api/department', departmentRouter)
+app.use('/api/dni_type', dniTypeRouter)
+app.use('/api/drying_method', dryingMethodRouter)
+app.use('/api/family_member', familyMemberRouter)
+app.use('/api/farm', farmRouter)
+app.use('/api/fermentation_type', fermentationTypeRouter)
+app.use('/api/gender', genderRouter)
+app.use('/api/lot', lotRouter)
+app.use('/api/municipality', municipalityRouter)
+app.use('/api/plot', plotRouter)
+app.use('/api/process_type', processTypeRouter)
+app.use('/api/relationship', relationshipRouter)
+app.use('/api/renovation_type', renovationTypeRouter)
+app.use('/api/scholarship', scholarshipRouter)
+app.use('/api/survey', surveyRouter)
+app.use('/api/survey_type', surveyTypeRouter)
+app.use('/api/user', userRouter)
+app.use('/api/user_web', userWebrouter)
+app.use('/api/user_type', userTypeRouter)
+app.use('/api/visit_type', visitTypeRouter)
+app.use('/api/visit', visitRouter)
+app.use('/api/answer_survey', answer_survey)
+app.use('/api/tickets', tickets)
+app.use('/api/planner_master', plannerMaster)
+app.use('/api/excels', ExcelRouter)
+app.use('/api/synchronizer', SynchronizerRouter)
+app.use('/api/plannerflowering', PlannerFloweringRouter)
+app.use('/api/optionslist', OptionsListRouter)
+app.use('/api/role', RoleRouter)
+app.use('/api/permission', PermissionRouter)
+app.use('/api/associations', AssociationsRouter)
+app.use('/api/E_learning', ElearningRouter)
+app.use('/api/cost_category', CostCategoryRouter)
+app.use('/api/cost_Head', CostHeadRouter) 
+app.use('/api/formula_Head', FormulaHeadRouter) 
+app.use('/api/configuration', ConfiguracionRouter)
+app.use('/api/Points', PointRouter)
+app.use('/api/elearningV2', elearningV2Router)
+app.use('/api/questionnaire', questionnaireRouter)
+app.use('/api/questionnaire_answer', questionnaireAnswerRouter)
+app.use('/api/questionnaire_type', questionnaireTypeRouter)
+
+
+app.use(errorMiddleware)
+
+export default app
+
+
+
+controller web
+
+import uuid from "uuid/v4";
+import db from "../connection/models/index";
+import bcrypt from "bcrypt";
+import Sequelize from "sequelize";
+import azure from "azure-storage";
+import fs from "fs";
+import jwt from "jsonwebtoken";
+import config from "../config/config";
+import emailService from "../services/email.service";
+import {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+} from "@azure/storage-blob";
+const { validationResult } = require("express-validator/check");
+
+const STORAGE_ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+const ACCOUNT_ACCESS_KEY = process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY;
+
+var admin = require("firebase-admin");
+
+const sharedKeyCredential = new StorageSharedKeyCredential(
+  STORAGE_ACCOUNT_NAME,
+  ACCOUNT_ACCESS_KEY
+);
+
+const connString = `https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`;
+
+const blobServiceClient = new BlobServiceClient(
+  connString,
+  sharedKeyCredential
+);
+const containerName = "profile-pictures";
+
+const generateSasToken = (container, blobName) => {
+  const connString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const blobService = azure.createBlobService(connString);
+
+  const startDate = new Date();
+  startDate.setMinutes(startDate.getMinutes() - 5);
+  const expiryDate = new Date(startDate);
+  expiryDate.setFullYear(2100);
+
+  const permissions =
+    azure.BlobUtilities.SharedAccessPermissions.READ +
+    azure.BlobUtilities.SharedAccessPermissions.LIST;
+  const sharedAccessPolicy = {
+    AccessPolicy: {
+      Permissions: permissions,
+      Start: startDate,
+      Expiry: expiryDate,
+    },
+  };
+
+  const sasToken = blobService.generateSharedAccessSignature(
+    container,
+    blobName,
+    sharedAccessPolicy
+  );
+  return {
+    token: sasToken,
+    url: blobService.getUrl(container, blobName, sasToken, true),
+  };
+};
+const ereaserFile = (filename) => {
+  if (fs.existsSync(filename)) {
+    fs.unlinkSync(filename);
+  }
+};
+
+async function uploadLocalFile(filePath, fileName, size) {
+  const containerClient = blobServiceClient.getContainerClient(
+    containerName
+  );
+  const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+  const buffer = fs.readFileSync(filePath);
+  const uploadBlobResponse = await blockBlobClient.upload(buffer, size);
+  console.log("uploadBlobResponse line 76", uploadBlobResponse)
+  if (!uploadBlobResponse) {
+    console.log("line 79 save image")
+    return false;
+   
+  } else {
+    console.log("image saved")
+    return true;
+    
+  }
+}
+
+const getFilesizeInBytes = (filename) => {
+  var stats = fs.statSync(filename);
+  var fileSizeInBytes = stats["size"];
+  return fileSizeInBytes;
+};
+
+const hasSomething = (string) => {
+  if (string !== null && string !== undefined && string !== "") {
+    return true;
+  } else {
+    return false;
+  }
+};
+const Op = Sequelize.Op;
+const User = db.caravela_user;
+const Municipality = db.municipality;
+const DniType = db.dni_type;
+const Country = db.country;
+const Department = db.department;
+const DniTypeCountry = db.dni_type_country;
+const Farm = db.farm;
+const Gender = db.gender;
+const Role = db.Role;
+const CostBody = db.cost_Body;
+
+const create = async (req, res) => {
+  try {
+
+    console.log("create ..............................................")
+    const id = uuid();
+    const user = req.body;
+    user.caravela_user_id = id;
+
+    const firstName = user.first_name;
+    const firstSurname = user.first_surname;
+    const dni = user.dni;
+    const password = user.password;
+    const role = user.role;
+    const second_name = user.second_name;
+    const second_surname = user.second_surname;
+    const birthdate = user.birthdate;
+    const address = user.address;
+    const cellphone = user.cellphone;
+    const email = user.email;
+    const has_assigned_technician = user.has_assigned_technician;
+    const has_associantion = user.has_associantion;
+    const society_name = user.society_name;
+    const user_approved = user.user_approved;
+    const terms_accepted = user.terms_accepted;
+    const tokenFirebase = user.tokenFirebase;
+    const profile_image_url = user.profile_image_url;
+    const profile_image_name = user.profile_image_name;
+    const status = user.status;
+    const civil_status_id = user.civil_status_id;
+    const dni_type_id = user.dni_type_id;
+    const gender_id = user.gender_id;
+    const municipality_id = user.municipality_id;
+    const user_type_id = user.user_type_id;
+    const boss = user.boss;
+    const technician_assigned_id = user.technician_assigned_id;
+    const scholarship_id = user.scholarship_id;
+    const img = user.profile_img;
+    const validate_img = user.validate_img;
+    const dni_associated = user.dni_associated;
+    const check_coffee = user.check_coffee;
+    const how_did_you_find_out = user.how_did_you_find_out;
+    const creatorRoleType = user.creatorRoleType;
+    if (
+      !hasSomething(firstName) ||
+      !hasSomething(firstSurname) ||
+      !hasSomething(dni) ||
+      !hasSomething(password) ||
+      !hasSomething(role) ||
+      !hasSomething(birthdate) ||
+      !hasSomething(address) ||
+      !hasSomething(cellphone) ||
+      !hasSomething(email) ||
+      !hasSomething(has_assigned_technician) ||
+      //!hasSomething(has_associantion) ||
+      //  !hasSomething(society_name) ||
+      //!hasSomething(user_approved) ||
+      //!hasSomething(terms_accepted) ||
+      !hasSomething(status) ||
+      !hasSomething(civil_status_id) ||
+      !hasSomething(dni_type_id) ||
+      !hasSomething(gender_id) ||
+      !hasSomething(municipality_id) ||
+      !hasSomething(scholarship_id) ||
+      !hasSomething(user_type_id)
+    ) {
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+    }
+
+    user.role_id = role;
+
+    if (role == 1) user.role = "Administrador";
+
+    if (role == 2) user.role = "caravela-peca-coord-role";
+
+    if (role == 3) user.role = "caravela-peca-tech-role";
+
+    if (role == 4) user.role = "caravela-producer-role";
+
+    const userFoundDni = await User.findOne({
+      where: { dni: dni },
+      order: [["createdAt", "DESC"]],
+    });
+    let dniPass = false;
+    if (userFoundDni) {
+      if (userFoundDni.role == "caravela-producer-role") {
+        if (role == "caravela-peca-tech-role") {
+          dniPass = true;
+        }
+      }
+
+      if (userFoundDni.dni == dni && dniPass == false) {
+        return res
+          .status(400)
+          .send({ message: "El dni ya se encuentra asignado a otro usuario" });
+      }
+    }
+
+    const userFound = await User.findOne({
+      where: { email: email },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (userFound) {
+      if (userFound.email == email) {
+        return res.status(400).send({
+          message: "El correo ya se encuentra asignado a otro usuario",
+        });
+      }
+    }
+
+    let image = null;
+    let namefile = null;
+
+    if (validate_img) {
+      const fileName =
+        id +
+        "-userProfile-" +
+        Math.floor(Math.random() * (999999999 - 111111111 + 1) + 111111111);
+
+      let base64Image = img.split(";base64,").pop();
+
+
+      fs.writeFileSync("img/userProfile/" + fileName + ".png", base64Image, {
+        encoding: "base64",
+      });
+
+      const fileZise = await getFilesizeInBytes(
+        "img/userProfile/" + fileName + ".png"
+      );
+
+      uploadLocalFile(
+        "img/userProfile/" + fileName + ".png",
+        fileName + ".png",
+        fileZise
+      );
+
+      const token = generateSasToken(containerName, fileName + ".png");
+      image = token.url;
+        console.log("line 251 generate sas token", token)
+        console.log("line 252 image url", image)
+      user.profile_image_name = fileName + ".png";
+
+      user.profile_image_url = image;
+
+      namefile = fileName;
+    }
+
+    user.boss = user.boss == "" ? null : user.boss;
+
+    const hashPassword = bcrypt.hashSync(password, 10);
+    if (!hashPassword)
+      return res
+        .status(400)
+        .send({ message: "Error. No se generó la contraseña." });
+
+    user.password = hashPassword;
+    await ereaserFile("img/userProfile/" + namefile + ".png");
+    
+    // console.log("user line 274",user)
+
+    const userCreated = await User.create(user);
+    if (!userCreated)
+      return res.status(400).send({ message: "Error. No se creó usuario." });
+
+      
+    res
+      .status(200)
+      .send({ message: "Usuario creado con éxito", user: userCreated });
+  } catch (error) {
+    // console.log("Hubo un error creando usuario: ", error);
+    console.log("There was an error creating user: ", error);
+    return res.status(400).send({ message: "Error creando usuario." });
+  }
+};
+
+const findAll = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const search2 = body.search2;
+    const idMunicapality = body.municipality_id;
+    const idDepartment = body.department_id;
+    const idCountry = body.country_id;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    const dni = body.dni;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "municipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else if (columnFilter == "dniType") {
+      order = [DniType, "spanish_name", typeFilter];
+    } else if (columnFilter == "country") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "department") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    let date = new Object();
+    if (idMunicapality == 0 || idMunicapality == undefined) {
+      date = true;
+    } else {
+      date = { municipality_id: idMunicapality };
+    }
+
+    let roleFilter = new Object();
+    if (search2 == 0 || search2 == undefined) {
+      roleFilter = true;
+    } else {
+      roleFilter = { role_id: search2 };
+    }
+
+    let departamentFilter = new Object();
+    if (idDepartment == 0 || idDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: idDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (idCountry == 0 || idCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: idCountry };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+        "role_id",
+      ],
+      paginate,
+
+      page,
+
+      include: [
+        {
+          model: Municipality,
+          //  required: false,
+          include: [
+            {
+              model: Department,
+              where: { [Op.and]: [CountryFilter] },
+              include: [{ model: Country }],
+            },
+          ],
+          where: { [Op.and]: [departamentFilter] },
+        },
+
+        // {
+        //   model: CostBody,
+        //   // required: true,
+        //   include: [{model: db.cost_Head, where: {[Op.or]: [{year: '2020'}]}}],
+        // },
+        { model: DniType },
+        { model: Role },
+      ],
+      where: {
+        [Op.and]: [date, roleFilter, states],
+        [Op.or]: [
+          {
+            dni: {
+              [Op.like]: `%${dni}%`,
+            },
+            namesQuery: Sequelize.where(
+              Sequelize.fn(
+                "concat",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("second_name"),
+                " ",
+                Sequelize.col("first_surname"),
+                " ",
+                Sequelize.col("second_surname")
+              ),
+              {
+                [Op.iLike]: `%${search}%`,
+              }
+            ),
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+const findAllFarms = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const search2 = body.search2;
+    const nameFarm = body.farm;
+    const idMunicapality = body.municipality_id;
+    const idDepartment = body.department_id;
+    const idCountry = body.country_id;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    const dni = body.dni;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "municipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else if (columnFilter == "dniType") {
+      order = [DniType, "spanish_name", typeFilter];
+    } else if (columnFilter == "country") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "department") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else if (columnFilter == "first_name") {
+      order = [User, columnFilter, typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+    console.log("body", body);
+
+    let departamentFilter = new Object();
+    if (idDepartment == 0 || idDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: idDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (idCountry == 0 || idCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: idCountry };
+    }
+
+    const allfarm = await Farm.paginate({
+      attributes: ["id", "farm_id", "name", "state_id"],
+      paginate,
+      page,
+      include: [
+        {
+          model: Municipality,
+          attributes: ["spanish_name"],
+          where: { [Op.and]: [departamentFilter] },
+          include: [
+            {
+              model: Department,
+              attributes: ["spanish_name"],
+              where: { [Op.and]: [CountryFilter] },
+              include: [{ model: Country, attributes: ["spanish_name"] }],
+            },
+          ],
+        },
+        {
+          model: User,
+          required: true,
+          attributes: [
+            "first_name",
+            "second_name",
+            "first_surname",
+            "second_surname",
+          ],
+          where: {
+            [Op.or]: [
+              {
+                dni: {
+                  [Op.like]: `%${dni}%`,
+                },
+
+                namesQuery: Sequelize.where(
+                  Sequelize.fn(
+                    "concat",
+                    Sequelize.col("caravela_user.first_name"),
+                    " ",
+                    Sequelize.col("caravela_user.second_name"),
+                    " ",
+                    Sequelize.col("caravela_user.first_surname"),
+                    " ",
+                    Sequelize.col("caravela_user.second_surname")
+                  ),
+                  {
+                    [Op.iLike]: `%${search}%`,
+                  }
+                ),
+              },
+            ],
+          },
+        },
+      ],
+      where: {
+        name: {
+          [Op.like]: `%${nameFarm}%`,
+        },
+        state_id: stateComing,
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: allfarm.docs, totals: allfarm.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo Fincas: ", error);
+    return res.status(400).send({ message: "Error obteniendo Fincas." });
+  }
+};
+//
+const findAllFilter = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search; // )(NOmbres y apellidos)
+    const searchByGender = body.searchByGender;
+    const searchBydni = body.searchBydni;
+    const searchByLastName = body.searchByLastName;
+    const searchDepartment = body.searchDepartment;
+    const searchByCountry = body.searchByCountry;
+    const searchByRole = body.searchByRole;
+    const idMunicapality = body.municipality_id;
+    const searchByRoleId =
+      body.searchByRoleId == undefined
+        ? true
+        : { role_id: body.searchByRoleId };
+    let date = [];
+    let dateDepartment = [];
+    let dateGender = [];
+    let dateCountry = [];
+
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "name") {
+      order = ["first_name", typeFilter];
+    } else if (columnFilter == "farm") {
+      order = [Farm, "name", typeFilter];
+    } else if (columnFilter == "nameCountry") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "nameDepartament") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else if (columnFilter == "nameMunicipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+
+    let whereUser = {
+      $: Sequelize.where(
+        Sequelize.fn(
+          "concat",
+          Sequelize.col("first_name"),
+          Sequelize.col("second_name"),
+          Sequelize.col("first_surname"),
+          Sequelize.col("second_surname")
+        ),
+        "Ilike",
+        `%${search ? search : ""}%`
+      ),
+      [Op.and]: [searchByRoleId],
+      role: { [Op.iLike]: `%${searchByRole ? searchByRole : ""}%` },
+      dni: { [Op.iLike]: `%${searchBydni ? searchBydni : ""}%` },
+    };
+    let WhereDeparment = {};
+    let WhereCountry = {};
+    if (idMunicapality !== 0 && idMunicapality !== undefined) {
+      whereUser.municipality_id = idMunicapality;
+    }
+
+    let departamentFilter = new Object();
+    if (searchDepartment == 0 || searchDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: searchDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (searchByCountry == 0 || searchByCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: searchByCountry };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+      ],
+      paginate,
+      subQuery: false,
+
+      page,
+      include: [
+        {
+          model: Municipality,
+          where: { [Op.and]: [departamentFilter] },
+          required: true,
+          include: [
+            {
+              model: Department,
+              where: { [Op.and]: [CountryFilter] },
+              required: true,
+              include: [
+                {
+                  model: Country,
+                  required: true,
+                },
+              ],
+            },
+          ],
+        },
+        { model: Farm, attributes: ["name"] },
+      ],
+      where: whereUser,
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findById = async (req, res) => {
+  const body = req.body;
+  const page = body.page;
+  const paginate = body.paginate;
+  const search = body.search;
+
+  console.log(req.body);
+  const user = await User.paginate({
+    attributes: [
+      "id",
+      "caravela_user_id",
+      "dni",
+      "role",
+      "first_name",
+      "second_name",
+      "first_surname",
+      "second_surname",
+      "birthdate",
+      "address",
+      "cellphone",
+      "email",
+      "how_did_you_find_out",
+      "has_assigned_technician",
+      "has_association",
+      "society_name",
+      "user_approved",
+      "terms_accepted",
+      "status",
+      "civil_status_id",
+      "dni_type_id",
+      "gender_id",
+      "municipality_id",
+      "user_type_id",
+      "boss",
+      "technician_assigned_id",
+      "scholarship_id",
+      "profile_image_url",
+      "dni_associated",
+      "check_coffee",
+      "how_did_you_find_out",
+      "state_id",
+      "from_producer",
+      "from_technician",
+      "role_id",
+    ],
+    paginate,
+
+    page,
+
+    include: [
+      {
+        model: Municipality,
+        include: [{ model: Department, include: [{ model: Country }] }],
+      },
+
+      { model: DniType, include: [{ model: Country }] },
+    ],
+    where: {
+      caravela_user_id: {
+        [Op.like]: `%${search}%`,
+      },
+    },
+  });
+  res.status(200).send({ results: user.docs, totals: user.total });
+
+  // try {
+  //   const id = req.params.id;
+  //   const userFound = await User.findOne({ where: { caravela_user_id: id } });
+  //   if (!userFound)
+  //     return res.status(200).send({ message: "No se encontró usuario." });
+
+  //   userFound.password = null;
+
+  //   res.status(200).send({ user: userFound });
+  // } catch (error) {
+  //   console.log("Hubo un error obteniendo usuario: ", error);
+  //   return res.status(400).send({ message: "Error obteniendo usuario." });
+  // }
+};
+
+const update = async (req, res) => {
+  try {
+    const user = req.body;
+    const id = user.caravela_user_id;
+    const dni = user.dni;
+    const role = user.role;
+    const first_name = user.first_name;
+    const second_name = user.second_name;
+    const first_surname = user.first_surname;
+    const second_surname = user.second_surname;
+    const birthdate = user.birthdate;
+    const address = user.address;
+    const cellphone = user.cellphone;
+    const email = user.email;
+    const has_assigned_technician = user.has_assigned_technician;
+    const has_associantion = user.has_associantion;
+    const society_name = user.society_name;
+    const user_approved = user.user_approved;
+    const terms_accepted = user.terms_accepted;
+    const tokenFirebase = user.tokenFirebase;
+    const profile_image_url = user.profile_image_url;
+    console.log("line 815 ---profile_image_url",profile_image_url)
+
+    const profile_image_name = user.profile_image_name;
+    const status = user.status;
+    const civil_status_id = user.civil_status_id;
+    const dni_type_id = user.dni_type_id;
+    const gender_id = user.gender_id;
+    const municipality_id = user.municipality_id;
+    const user_type_id = user.user_type_id;
+    const boss = user.boss;
+    const technician_assigned_id = user.technician_assigned_id;
+    const scholarship_id = user.scholarship_id;
+    const img = user.profile_img;
+    const validate_img = user.validate_img;
+    const dni_associated = user.dni_associated;
+    const check_coffee = user.check_coffee;
+    const how_did_you_find_out = user.how_did_you_find_out;
+    const creatorRoleType = user.creatorRoleType;
+    const preDNI = user.preDNI;
+    const userUpdate = await User.findOne({
+      where: { caravela_user_id: id },
+    });
+
+    //
+    console.log("preDni",preDNI);
+    console.log("dni",dni);
+
+    console.log("userupdate line 842", userUpdate.profile_image_url)
+
+    if (!userUpdate) {
+      return res.status(400).send({ message: "No se encontró usuario." });
+    }
+    if (dni != preDNI) {
+      const userExist = await User.findOne({
+        where: { dni: dni, role_id: role },
+      });
+
+      if (userExist) {
+        return res
+          .status(400)
+          .send({ message: "Ya existe un usuario con el DNI ingresado" });
+      }
+    }
+
+    
+    // let image = null;
+    let image = userUpdate.profile_image_url;
+    let namefile = null;
+
+    if (validate_img) { 
+      const fileName =
+        id +
+        "-userProfile-" +
+        Math.floor(Math.random() * (999999999 - 111111111 + 1) + 111111111);
+
+      let base64Image = img.split(";base64,").pop();
+
+      fs.writeFileSync("img/userProfile/" + fileName + ".png", base64Image, {
+        encoding: "base64",
+      });
+
+      const fileZise = await getFilesizeInBytes(
+        "img/userProfile/" + fileName + ".png"
+      );
+
+      uploadLocalFile(
+        "img/userProfile/" + fileName + ".png",
+        fileName + ".png",
+        fileZise
+      );
+
+      const token = generateSasToken(containerName, fileName + ".png");
+      image = token.url;
+
+      userUpdate.profile_image_name = fileName + ".png";
+      namefile = fileName;
+    }
+
+    if (
+      userUpdate.technician_assigned_id &&
+      userUpdate.technician_assigned_id != null &&
+      userUpdate.technician_assigned_id != undefined &&
+      userUpdate.technician_assigned_id != 0
+    ) {
+      if (technician_assigned_id != userUpdate.technician_assigned_id) {
+        await db.ModifyUser.create({
+          tech_from: userUpdate.technician_assigned_id,
+          tech_to: technician_assigned_id,
+          producer: userUpdate.id,
+        });
+      }
+    }
+
+    userUpdate.role_id = user.role;
+
+    if (parseInt(user.role) == 1) userUpdate.role = "Administrador";
+
+    if (parseInt(user.role) == 2) userUpdate.role = "caravela-peca-coord-role";
+
+    if (parseInt(user.role) == 3) userUpdate.role = "caravela-peca-tech-role";
+
+    if (parseInt(user.role) == 4) userUpdate.role = "caravela-producer-role";
+
+    if (
+      userUpdate.technician_assigned_id == null ||
+      userUpdate.technician_assigned_id == ""
+    ) {
+      if (parseInt(user.role) == 4) {
+        if (technician_assigned_id != null && technician_assigned_id != "") {
+          //Notificar el técnico que se la asociado un productor
+          const userSearchTechnician = await User.findOne({
+            where: [{ id: technician_assigned_id }],
+            attributes: ["tokenFirebase"],
+          });
+
+          if (userSearchTechnician.tokenFirebase) {
+            const message = {
+              data: {
+                notification_foreground: "true",
+                type: "notification_create",
+              },
+              token: userSearchTechnician.tokenFirebase,
+              name: "my_notification_arabica",
+              notification: {
+                body:
+                  "Se le ha asociado el prodcutor " +
+                  first_name +
+                  " " +
+                  first_surname,
+                title: "Asociación de un nuevo productor",
+              },
+            };
+
+            // Enviar mensaje Firebase
+            admin
+              .messaging()
+              .send(message)
+              .then((response) => {
+                // Response is a message ID string.
+                console.log("Successfully sent message:", response);
+              })
+              .catch((error) => {
+                console.log("Error sending message:", error);
+              });
+          }
+
+          //Notificar el prodcutor que ya tiene un técnico asociado
+          if (
+            userUpdate.tokenFirebase != "" &&
+            userUpdate.tokenFirebase != null
+          ) {
+            const userSearchTechnician = await User.findOne({
+              where: [{ id: technician_assigned_id }],
+              attributes: ["first_name", "second_surname"],
+            });
+
+            const message = {
+              data: {
+                notification_foreground: "true",
+                type: "notification_create",
+              },
+              token: userUpdate.tokenFirebase,
+              name: "my_notification_arabica",
+              notification: {
+                body:
+                  "Usted fue asociado al técnico " +
+                  userSearchTechnician.first_name +
+                  " " +
+                  userSearchTechnician.first_surname,
+                title: "Fue asociado a un técnico",
+              },
+            };
+
+            // Enviar mensaje Firebase
+            admin
+              .messaging()
+              .send(message)
+              .then((response) => {
+                // Response is a message ID string.
+                console.log("Successfully sent message:", response);
+              })
+              .catch((error) => {
+                console.log("Error sending message:", error);
+              });
+          }
+
+          await db.MessageHead.update(
+            { technicial_id: technician_assigned_id },
+            {
+              where: {
+                user_id: userUpdate.id,
+                technicial_id: {
+                  [Op.eq]: null,
+                },
+              },
+            }
+          );
+        }
+      }
+    }
+
+    userUpdate.dni = dni;
+    userUpdate.first_name = first_name;
+    userUpdate.second_name = second_name;
+    userUpdate.first_surname = first_surname;
+    userUpdate.second_surname = second_surname;
+    userUpdate.birthdate = birthdate;
+    userUpdate.address = address;
+    userUpdate.cellphone = cellphone;
+    userUpdate.email = email;
+    userUpdate.has_assigned_technician = has_assigned_technician;
+    userUpdate.has_associantion = has_associantion;
+    userUpdate.society_name = society_name;
+    userUpdate.user_approved = user_approved;
+    userUpdate.terms_accepted = terms_accepted;
+    userUpdate.status = status;
+    userUpdate.civil_status_id = civil_status_id;
+    userUpdate.dni_type_id = dni_type_id;
+    userUpdate.gender_id = gender_id;
+    userUpdate.municipality_id = municipality_id;
+    userUpdate.user_type_id = user_type_id;
+    userUpdate.boss = boss == "" ? null : boss;
+    userUpdate.technician_assigned_id = technician_assigned_id;
+    userUpdate.scholarship_id = scholarship_id;
+    userUpdate.profile_image_url = image;
+
+    console.log("line 1031 profile_image_url"+profile_image_url)
+    console.log("line 1032 profile_image_url"+image)
+    userUpdate.dni_associated = dni_associated;
+    userUpdate.check_coffee = check_coffee;
+    userUpdate.how_did_you_find_out = how_did_you_find_out;
+    userUpdate.creatorRoleType = creatorRoleType;
+    const userUp = await userUpdate.save();
+    await ereaserFile("img/userProfile/" + namefile + ".png"); //borra imagen subida
+    if (!userUp)
+      return res
+        .status(400)
+        .send({ message: "Error. No se actualizo usuario." });
+
+    res
+      .status(200)
+      .send({ message: "Usuario actualizada con éxito", user: userUp });
+  } catch (error) {
+    console.log("Hubo un error actualizando Usuario: ", error);
+    return res.status(400).send({ message: "Error actualizando el usuario." });
+  }
+};
+const deleteOne = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const caravela_userDeleted = await User.findOne({
+      where: { caravela_user_id: id, deleteAt: null, state_id: 1 },
+    });
+    if (!caravela_userDeleted) {
+      return res.status(404).send({
+        message:
+          "No se encontro el usuario que desea eliminar o ya esta eliminado",
+      });
+    }
+    await User.update(
+      { deleteAt: Sequelize.fn("NOW"), state_id: 2 },
+      { where: { caravela_user_id: id } }
+    );
+    res.status(200).send({
+      message: "usuario borrado con éxito",
+      caravela_user: caravela_userDeleted,
+    });
+  } catch (error) {
+    console.log("Hubo un error borrando usuario: ", error);
+    return res.status(400).send({ message: "Error borrando usuario." });
+  }
+};
+
+const recoveryPasswordEmail = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+    let userFound = null;
+
+    if (req.body.role_id === 1) {
+      userFound = await User.findOne({
+        where: {
+          dni: req.body.dni,
+          email: {
+            [Op.iLike]: `${req.body.email}`,
+          },
+        },
+      });
+    } else {
+      return res.status(400).send({ message: "El usuario no existe" });
+    }
+    if (userFound) {
+      await User.update(
+        { password: bcrypt.hashSync("caravela123", 10) },
+        { where: { dni: req.body.dni, email: req.body.email } }
+      );
+      let html =
+        "<p> Hola, " +
+        userFound.first_name +
+        " " +
+        userFound.first_surname +
+        " </p>";
+      html +=
+        "<br /> Tú contraseña ha sido reestablecida: caravela123 <br /><p>Recuerda cambiarla</p>";
+      if (
+        await emailService.sendEmail({
+          to: userFound.email,
+          from: "info@arabica-app.com",
+          html,
+          subject: "? Recuperación de contraseña",
+        })
+      ) {
+        return res.status(200).send({
+          message:
+            "Se ha enviado correctamente el email al correo " + req.body.email,
+          id: 1,
+        });
+      } else {
+        return res.status(400).send({
+          message:
+            "Existen problemas con el envío del corre electrónico, por favor intentalo más tarde.",
+          id: 0,
+        });
+      }
+    } else
+      return res.status(400).send({ message: "El usuario no existe", id: 0 });
+  } catch (error) {
+    return res.status(400).send({ message: error });
+  }
+};
+
+const updateEnable = async (req, res) => {
+  try {
+    const user = req.body;
+    const id = user.caravela_user_id;
+    const state_id = user.state_id;
+
+    if (!hasSomething(state_id))
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+
+    const userUpdate = await User.findOne({
+      where: { caravela_user_id: id },
+    });
+
+    if (!userUpdate)
+      return res.status(400).send({ message: "No se encontró usuario." });
+
+    const userUp = await User.update(
+      {
+        deleteAt: user.deleteAt,
+        state_id: state_id,
+      },
+      { where: { caravela_user_id: id } }
+    );
+    if (!userUp)
+      return res
+        .status(400)
+        .send({ message: "Error. No se actualizo usuario." });
+    console.log(userUp);
+    res
+      .status(200)
+      .send({ message: "Usuario habilitado con éxito", user: userUp });
+  } catch (error) {
+    console.log("Hubo un error habilitado Usuario: ", error);
+    return res.status(400).send({ message: "Error habilitado el usuario." });
+  }
+};
+
+const updateEnableFarm = async (req, res) => {
+  try {
+    const farm = req.body;
+    const id = farm.farm_id;
+    const state_id = farm.state_id;
+
+    if (!hasSomething(state_id))
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+
+    const farmUpdate = await Farm.findOne({
+      where: { farm_id: id },
+    });
+
+    if (!farmUpdate)
+      return res.status(400).send({ message: "No se encontró finca." });
+
+    const farmUp = await Farm.update(
+      {
+        updatedAt: farm.updatedAt,
+        state_id: state_id,
+      },
+      { where: { farm_id: id } }
+    );
+    if (!farmUp)
+      return res
+        .status(400)
+        .send({ message: "Error. No se actualizo la finca ." });
+    console.log(farmUp);
+    res
+      .status(200)
+      .send({ message: "Finca habilitada con éxito", user: farmUp });
+  } catch (error) {
+    console.log("Hubo un error habilitado finca: ", error);
+    return res.status(400).send({ message: "Error habilitado el finca." });
+  }
+};
+
+const findAllByTechnical = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const technical = body.Tec;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+    let idUser;
+    if (!technical) {
+      const decoded = jwt.decode(
+        req.headers.authorization.split(" ")[1],
+        config.secretJWT
+      );
+      idUser = decoded.id_user;
+    } else {
+      idUser = technical;
+    }
+
+    const decoded = jwt.decode(
+      req.headers.authorization.split(" ")[1],
+      config.secretJWT
+    );
+    console.log(decoded.id_user);
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+      ],
+      paginate,
+
+      page,
+
+      where: {
+        [Op.and]: [{ state_id: 1 }, { boss: idUser }],
+        [Op.or]: [
+          {
+            caravela_user_id: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findAllByProducer = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const technical = body.Tec;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+    let idUser;
+    if (!technical) {
+      const decoded = jwt.decode(
+        req.headers.authorization.split(" ")[1],
+        config.secretJWT
+      );
+      idUser = decoded.id_user;
+    } else {
+      idUser = technical;
+    }
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+      ],
+      paginate,
+
+      page,
+
+      where: {
+        [Op.and]: [{ state_id: 1 }, { technician_assigned_id: idUser }],
+        [Op.or]: [
+          {
+            caravela_user_id: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findAllByAdmin = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+      ],
+      paginate,
+
+      page,
+
+      where: {
+        [Op.and]: [{ state_id: 1 }, { role_id: 2 }],
+        [Op.or]: [
+          {
+            caravela_user_id: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findAllFilterTech = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search; // )(NOmbres y apellidos)
+
+    const decoded = jwt.decode(
+      req.headers.authorization.split(" ")[1],
+      config.secretJWT
+    );
+    const iduser = decoded.id_user;
+
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+      ],
+      paginate,
+
+      page,
+
+      where: { boss: iduser },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findByTecId = async (req, res) => {
+  // no uuid
+  try {
+    const id = req.params.id;
+    const userFound = await User.findOne({
+      where: { id: id },
+      attributes: ["id", "role_id"],
+    });
+    if (!userFound)
+      return res.status(200).send({ message: "No se encontró usuario." });
+
+    res.status(200).send({ user: userFound });
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuario: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuario." });
+  }
+};
+
+const findAllProducerCost = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const search2 = body.search2;
+    const idMunicapality = body.municipality_id;
+    const idDepartment = body.department_id;
+    const idCountry = body.country_id;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    const year = body.year;
+    const dni = body.dni;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "municipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else if (columnFilter == "dniType") {
+      order = [DniType, "spanish_name", typeFilter];
+    } else if (columnFilter == "country") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "department") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    let date = new Object();
+    if (idMunicapality == 0 || idMunicapality == undefined) {
+      date = true;
+    } else {
+      date = { municipality_id: idMunicapality };
+    }
+
+    let roleFilter = new Object();
+    if (search2 == 0 || search2 == undefined) {
+      roleFilter = true;
+    } else {
+      roleFilter = { role_id: search2 };
+    }
+
+    let yearCostFilter = new Object();
+    if (year == 0 || year == undefined) {
+      yearCostFilter = true;
+    } else {
+      yearCostFilter = { year: year };
+    }
+
+    let departamentFilter = new Object();
+    if (idDepartment == 0 || idDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: idDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (idCountry == 0 || idCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: idCountry };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+        "role_id",
+      ],
+      paginate,
+
+      page,
+
+      include: [
+        {
+          model: Municipality,
+          //  required: false,
+          include: [
+            {
+              model: Department,
+              where: { [Op.and]: [CountryFilter] },
+              include: [{ model: Country }],
+            },
+          ],
+          where: { [Op.and]: [departamentFilter] },
+        },
+
+        {
+          model: CostBody,
+          // required: true,
+          include: [
+            { model: db.cost_Head, where: { [Op.and]: [yearCostFilter] } },
+          ],
+        },
+        { model: DniType },
+        { model: Role },
+      ],
+      where: {
+        [Op.and]: [date, roleFilter, states],
+        [Op.or]: [
+          {
+            dni: {
+              [Op.like]: `%${dni}%`,
+            },
+            namesQuery: Sequelize.where(
+              Sequelize.fn(
+                "concat",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("second_name"),
+                " ",
+                Sequelize.col("first_surname"),
+                " ",
+                Sequelize.col("second_surname")
+              ),
+              {
+                [Op.iLike]: `%${search}%`,
+              }
+            ),
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+export default {
+  create,
+  update,
+  findAll,
+  findAllFilter,
+  findById,
+  deleteOne,
+  updateEnable,
+  updateEnableFarm,
+  recoveryPasswordEmail,
+  findAllByTechnical,
+  findAllByProducer,
+  findAllByAdmin,
+  findByTecId,
+  findAllFilterTech,
+  findAllFarms,
+  findAllProducerCost,
+};
+
+
+
+jwt
+
+import jwt from 'jsonwebtoken'
+import moment from 'moment-timezone'
+import config from '../config/config'
+
+const createToken = (user) => {
+    try {
+        const now = moment()
+        const payload = {
+            id: user.caravela_user_id,
+            id_user: user.id,
+            dni: user.dni,
+            first_name: user.first_name,
+            second_name: user.second_name,
+            first_surname: user.first_surname,
+            second_surname: user.second_surname,
+            role: user.role,
+            role_id: user.role_id,
+            gender: user.gender.spanish_name,
+            profile_image_url: user.profile_image_url,
+            profile_image_name: user.profile_image_name,
+            iat: now.unix(),
+            exp: now.add(10, 'years').unix()
+        }
+        const token = jwt.sign(payload, config.secretJWT)
+        return token
+    } catch (error) {
+        console.log('Hubo un error generando el token: ', error)
+        return null
+    }
+}
+
+const verifyToken = (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization
+       
+        // if (!authHeader || authHeader == '') return res.status(400).send({ message: 'No cuenta con la cabecera de autenticación.' })
+        if (!authHeader || authHeader == '') return res.status(400).send({ message: 'It does not have the authentication header.' })
+
+        const isBearer = authHeader.split(' ')[0]
+        // if (isBearer != 'Bearer') return res.status(400).send({ message: 'La cabecera de autenticación no es válida.' })
+        if (isBearer != 'Bearer') return res.status(400).send({ message: 'The authentication header is not valid.' })
+
+        const authToken = authHeader.split(' ')[1]
+        if (!authToken || authToken == '') return res.status(400).send({ message: 'La cabecera de autenticación no es válida.' })
+
+        const payload = jwt.verify(authToken, config.secretJWT)
+        if (!payload) return res.status(400).send({ message: 'No tiene permiso para realizar esta operación.' })
+
+        const now = moment()
+        if (payload.exp < now.unix) {
+            return res.status(400).send({ message: 'El token ha expirado.' })
+        }
+        next()
+
+    } catch (error) {
+        console.log('Hubo un error verificando el token: ', error)
+        return res.status(400).send({ message: 'Hubo un error verificando el token o ha expirado. Inicie sesión nuevamente e intente de nuevo.' })
+    }
+}
+
+export default { createToken, verifyToken }
+
+
+
+
+logger
+
+
+const { createLogger, format, transports } = require('winston')
+
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json(),
+    format.printf(info => `[${info.timestamp}][${info.level}]: ${info.message}`)
+  ),
+  transports: [
+    //
+    // - Write to all logs with level `info` and below to `quick-start-combined.log`.
+    // - Write all logs error (and below) to `quick-start-error.log`.
+    //
+    new transports.File({
+      filename: 'logs/quick-start-error.log',
+      level: 'error',
+      maxSize: 5120000,
+      maxFiles: 20
+    }),
+    new transports.File({
+      filename: 'logs/quick-start-combined.log',
+      maxSize: 5120000,
+      maxFiles: 5
+    })
+  ]
+})
+
+//
+// If we're not in production then **ALSO** log to the `console`
+// with the colorized simple format.
+//
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(
+    new transports.Console({
+      format: format.combine(format.colorize(), format.simple())
+    })
+  )
+}
+
+module.exports = logger
+
+
+
+middleware error
+
+const logger = require("../services/log.service");
+const { ValidationError } = require("express-validation");
+
+const middleware = (error, req, res, next) => {
+  let errorObject;
+
+  logger.error(error);
+
+  if (typeof error.toJson === "function") {
+    errorObject = error.toJson();
+  } else {
+    if (error instanceof ValidationError) {
+      errorObject = {
+        status: error.statusCode,
+        name: "ValidationError",
+        message: error,
+      };
+    } else {
+      errorObject = {
+        status: 500,
+        name: "UnkwnownError",
+        message: "Unkwnown Error",
+      };
+    }
+  }
+
+  res.status(errorObject.status).json(errorObject);
+};
+
+module.exports = middleware;
+
+
+validation
+
+const logger = require("../services/log.service");
+const { ValidationError } = require("express-validation");
+
+const middleware = (error, req, res, next) => {
+  let errorObject;
+
+  logger.error(error);
+
+  if (typeof error.toJson === "function") {
+    errorObject = error.toJson();
+  } else {
+    if (error instanceof ValidationError) {
+      errorObject = {
+        status: error.statusCode,
+        name: "ValidationError",
+        message: error,
+      };
+    } else {
+      errorObject = {
+        status: 500,
+        name: "UnkwnownError",
+        message: "Unkwnown Error",
+      };
+    }
+  }
+
+  res.status(errorObject.status).json(errorObject);
+};
+
+module.exports = middleware;
+  
+
+
+
+user model
+
+'use strict';
+import sequelizePaginate from 'sequelize-paginate';
+module.exports = (sequelize, DataTypes) => {
+  const caravela_user = sequelize.define (
+    'caravela_user',
+    {
+      caravela_user_id: DataTypes.STRING,
+      dni: DataTypes.STRING,
+      role: DataTypes.STRING,
+      first_name: {
+        type: DataTypes.STRING,
+        set (value) {
+          if (value) this.setDataValue ('first_name', value.toUpperCase ());
+          else this.setDataValue ('first_name', value);
+        },
+        get () {
+          return this.getDataValue ('first_name');
+        },
+      },
+      second_name: {
+        type: DataTypes.STRING,
+        set (value) {
+          if (value) this.setDataValue ('second_name', value.toUpperCase ());
+          else this.setDataValue ('second_name', value);
+        },
+        get () {
+          return this.getDataValue ('second_name');
+        },
+      },
+      first_surname: {
+        type: DataTypes.STRING,
+        set (value) {
+          if (value) this.setDataValue ('first_surname', value.toUpperCase ());
+          else this.setDataValue ('first_surname', value);
+        },
+        get () {
+          return this.getDataValue ('first_surname');
+        },
+      },
+      second_surname: {
+        type: DataTypes.STRING,
+        set (value) {
+          if (value) this.setDataValue ('second_surname', value.toUpperCase ());
+          else this.setDataValue ('second_surname', value);
+        },
+        get () {
+          return this.getDataValue ('second_surname');
+        },
+      },
+      password: DataTypes.STRING,
+      birthdate: DataTypes.DATE,
+      address: DataTypes.STRING,
+      cellphone: DataTypes.STRING,
+      email: DataTypes.STRING,
+      has_assigned_technician: DataTypes.BOOLEAN,
+      has_association: DataTypes.BOOLEAN,
+      society_name: DataTypes.STRING,
+      user_approved: DataTypes.BOOLEAN,
+      terms_accepted: DataTypes.BOOLEAN,
+      profile_image_url: DataTypes.STRING,
+      profile_image_name: DataTypes.STRING,
+      status: DataTypes.INTEGER,
+      civil_status_id: DataTypes.INTEGER,
+      dni_type_id: DataTypes.INTEGER,
+      gender_id: DataTypes.INTEGER,
+      municipality_id: DataTypes.INTEGER,
+      user_type_id: DataTypes.INTEGER,
+      boss: DataTypes.INTEGER,
+      technician_assigned_id: DataTypes.INTEGER,
+      role_id: DataTypes.INTEGER,
+      scholarship_id: DataTypes.INTEGER,
+      creatorRoleType: DataTypes.STRING,
+      tokenFirebase: DataTypes.STRING,
+      dni_associated: DataTypes.STRING,
+      check_coffee: DataTypes.BOOLEAN,
+      how_did_you_find_out: DataTypes.STRING,
+      state_id: DataTypes.INTEGER,
+      deleteAt: DataTypes.DATE,
+      from_producer: DataTypes.BOOLEAN,
+      from_technician: DataTypes.BOOLEAN,
+      total_rating: DataTypes.DOUBLE,
+      count_rating: DataTypes.INTEGER,
+      updatedAt: DataTypes.DATE,
+      creatorRoleType: DataTypes.STRING,
+      total_points: DataTypes.INTEGER,
+    },
+    {
+      freezeTableName: true,
+      name: {
+        singular: 'caravela_user',
+        plural: 'caravela_user',
+      },
+    }
+  );
+  caravela_user.associate = function (models) {
+    this.hasMany (models.twilioResponse, {
+      foreignKey: {name: 'user_id', allowNull: false},
+    });
+    caravela_user.hasMany (models.user_visit, {
+      as: 'Producervisit',
+      foreignKey: {name: 'producer_visited_id', allowNull: false},
+    });
+    caravela_user.hasMany (models.user_visit, {
+      as: 'Technicianvisit',
+      foreignKey: {name: 'visiting_technician_id', allowNull: false},
+    });
+    caravela_user.belongsTo (models.gender, {
+      foreignKey: {name: 'gender_id', allowNull: false},
+    });
+    caravela_user.belongsTo (models.civil_status, {
+      foreignKey: {name: 'civil_status_id', allowNull: false},
+    });
+
+    caravela_user.belongsTo (models.scholarship, {
+      foreignKey: {name: 'scholarship_id', allowNull: true},
+    });
+
+    caravela_user.hasMany (models.family_member, {
+      foreignKey: {name: 'user_id', allowNull: false},
+    });
+    caravela_user.hasMany (models.farm, {
+      foreignKey: {name: 'user_id', allowNull: false},
+    });
+    caravela_user.hasMany (models.current_versionservice, {
+      foreignKey: {name: 'id_user', allowNull: true},
+    });
+    caravela_user.belongsTo (models.dni_type, {
+      foreignKey: {name: 'dni_type_id', allowNull: false},
+    });
+
+    caravela_user.belongsTo (models.municipality, {
+      foreignKey: {name: 'municipality_id', allowNull: false},
+    });
+
+    // caravela_user.hasMany(models.user_visit, {
+    //   foreignKey: { name: "municipality_id", allowNull: false }
+    // });
+
+    caravela_user.hasMany (models.survey, {
+      foreignKey: {
+        name: 'creator_user_id',
+        allowNull: false,
+        as: 'creator_survey',
+      },
+    });
+
+    caravela_user.hasMany (models.MessageHead, {
+      foreignKey: {name: 'user_id', allowNull: true},
+      as: 'producer',
+    });
+
+    caravela_user.hasMany (models.MessageHead, {
+      foreignKey: {name: 'technicial_id', allowNull: true},
+      as: 'technicial',
+    });
+
+    caravela_user.hasMany (models.MessageBody, {
+      foreignKey: {name: 'view_user_producer', allowNull: true},
+      as: 'producer_body',
+    });
+
+    caravela_user.hasMany (models.MessageBody, {
+      foreignKey: {name: 'view_user_technical', allowNull: true},
+      as: 'technicial_body',
+    });
+
+    caravela_user.belongsTo (models.Role, {
+      foreignKey: {name: 'role_id', allowNull: true},
+    
+    });
+
+    caravela_user.hasMany (models.Point, {
+      foreignKey: {name: 'user_id', allowNull: true},
+    });
+
+    caravela_user.belongsToMany (models.cost_Body, {
+      through: 'replyQuestion',
+      foreignKey: {name: 'user_id', allowNull: false},
+      
+    
+    });
+
+    // caravela_user.hasMany(models.ModifyUser, {
+    //   foreignKey: { name: "producer", allowNull: false }
+    // })
+  };
+  sequelizePaginate.paginate (caravela_user);
+  return caravela_user;
+};
+

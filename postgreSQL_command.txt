@@ -149,3 +149,26 @@ sequelize.authenticate().then(()=>{
 }).catch((err)=>{
 	console.error("err"error)
 })
+
+
+
+pm2 (process management):
+
+it is module that can alive application on server.
+
+to start node application :
+
+pm2 start app.js
+
+to check the status of the application:
+
+pm2 status
+
+chech logs created by the pm2
+pm2 logs app
+
+pm2 delete name of app or id of app
+pm2 delete 0
+or 
+
+pm2 delete app
