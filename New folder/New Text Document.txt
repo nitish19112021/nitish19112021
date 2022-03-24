@@ -2644,3 +2644,3817 @@ export default {
     sequelize,
    
 }
+
+
+
+
+user web contrller
+
+
+import uuid from "uuid/v4";
+import db from "../connection/models/index";
+import bcrypt from "bcrypt";
+import Sequelize from "sequelize";
+import azure from "azure-storage";
+import fs from "fs";
+import jwt from "jsonwebtoken";
+import config from "../config/config";
+import emailService from "../services/email.service";
+import {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+} from "@azure/storage-blob";
+const { validationResult } = require("express-validator/check");
+
+const STORAGE_ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+const ACCOUNT_ACCESS_KEY = process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY;
+
+var admin = require("firebase-admin");
+
+const sharedKeyCredential = new StorageSharedKeyCredential(
+  STORAGE_ACCOUNT_NAME,
+  ACCOUNT_ACCESS_KEY
+);
+
+const connString = `https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`;
+
+const blobServiceClient = new BlobServiceClient(
+  connString,
+  sharedKeyCredential
+);
+const containerName = "profile-pictures";
+
+const generateSasToken = (container, blobName) => {
+  const connString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const blobService = azure.createBlobService(connString);
+
+  const startDate = new Date();
+  startDate.setMinutes(startDate.getMinutes() - 5);
+  const expiryDate = new Date(startDate);
+  expiryDate.setFullYear(2100);
+
+  const permissions =
+    azure.BlobUtilities.SharedAccessPermissions.READ +
+    azure.BlobUtilities.SharedAccessPermissions.LIST;
+  const sharedAccessPolicy = {
+    AccessPolicy: {
+      Permissions: permissions,
+      Start: startDate,
+      Expiry: expiryDate,
+    },
+  };
+
+  const sasToken = blobService.generateSharedAccessSignature(
+    container,
+    blobName,
+    sharedAccessPolicy
+  );
+  return {
+    token: sasToken,
+    url: blobService.getUrl(container, blobName, sasToken, true),
+  };
+};
+const ereaserFile = (filename) => {
+  if (fs.existsSync(filename)) {
+    fs.unlinkSync(filename);
+  }
+};
+
+async function uploadLocalFile(filePath, fileName, size) {
+  const containerClient = blobServiceClient.getContainerClient(
+    containerName
+  );
+  const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+  const buffer = fs.readFileSync(filePath);
+  const uploadBlobResponse = await blockBlobClient.upload(buffer, size);
+  console.log("uploadBlobResponse line 76", uploadBlobResponse)
+  if (!uploadBlobResponse) {
+    console.log("line 79 save image")
+    return false;
+   
+  } else {
+    console.log("image saved")
+    return true;
+    
+  }
+}
+
+const getFilesizeInBytes = (filename) => {
+  var stats = fs.statSync(filename);
+  var fileSizeInBytes = stats["size"];
+  return fileSizeInBytes;
+};
+
+const hasSomething = (string) => {
+  if (string !== null && string !== undefined && string !== "") {
+    return true;
+  } else {
+    return false;
+  }
+};
+const Op = Sequelize.Op;
+const User = db.caravela_user;
+const Municipality = db.municipality;
+const DniType = db.dni_type;
+const Country = db.country;
+const Department = db.department;
+const DniTypeCountry = db.dni_type_country;
+const Farm = db.farm;
+const Gender = db.gender;
+const Role = db.Role;
+const CostBody = db.cost_Body;
+
+const create = async (req, res) => {
+  try {
+
+    console.log("create ..............................................")
+    const id = uuid();
+    const user = req.body;
+    user.caravela_user_id = id;
+
+    const firstName = user.first_name;
+    const firstSurname = user.first_surname;
+    const dni = user.dni;
+    const password = user.password;
+    const role = user.role;
+    const second_name = user.second_name;
+    const second_surname = user.second_surname;
+    const birthdate = user.birthdate;
+    const address = user.address;
+    const cellphone = user.cellphone;
+    const email = user.email;
+    const has_assigned_technician = user.has_assigned_technician;
+    const has_associantion = user.has_associantion;
+    const society_name = user.society_name;
+    const user_approved = user.user_approved;
+    const terms_accepted = user.terms_accepted;
+    const tokenFirebase = user.tokenFirebase;
+    const profile_image_url = user.profile_image_url;
+    const profile_image_name = user.profile_image_name;
+    const status = user.status;
+    const civil_status_id = user.civil_status_id;
+    const dni_type_id = user.dni_type_id;
+    const gender_id = user.gender_id;
+    const municipality_id = user.municipality_id;
+    const user_type_id = user.user_type_id;
+    const boss = user.boss;
+    const technician_assigned_id = user.technician_assigned_id;
+    const scholarship_id = user.scholarship_id;
+    const img = user.profile_img;
+    const validate_img = user.validate_img;
+    const dni_associated = user.dni_associated;
+    const check_coffee = user.check_coffee;
+    const how_did_you_find_out = user.how_did_you_find_out;
+    const creatorRoleType = user.creatorRoleType;
+    if (
+      !hasSomething(firstName) ||
+      !hasSomething(firstSurname) ||
+      !hasSomething(dni) ||
+      !hasSomething(password) ||
+      !hasSomething(role) ||
+      !hasSomething(birthdate) ||
+      !hasSomething(address) ||
+      !hasSomething(cellphone) ||
+      !hasSomething(email) ||
+      !hasSomething(has_assigned_technician) ||
+      //!hasSomething(has_associantion) ||
+      //  !hasSomething(society_name) ||
+      //!hasSomething(user_approved) ||
+      //!hasSomething(terms_accepted) ||
+      !hasSomething(status) ||
+      !hasSomething(civil_status_id) ||
+      !hasSomething(dni_type_id) ||
+      !hasSomething(gender_id) ||
+      !hasSomething(municipality_id) ||
+      !hasSomething(scholarship_id) ||
+      !hasSomething(user_type_id)
+    ) {
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+    }
+
+    user.role_id = role;
+
+    if (role == 1) user.role = "Administrador";
+
+    if (role == 2) user.role = "caravela-peca-coord-role";
+
+    if (role == 3) user.role = "caravela-peca-tech-role";
+
+    if (role == 4) user.role = "caravela-producer-role";
+
+    const userFoundDni = await User.findOne({
+      where: { dni: dni },
+      order: [["createdAt", "DESC"]],
+    });
+    let dniPass = false;
+    if (userFoundDni) {
+      if (userFoundDni.role == "caravela-producer-role") {
+        if (role == "caravela-peca-tech-role") {
+          dniPass = true;
+        }
+      }
+
+      if (userFoundDni.dni == dni && dniPass == false) {
+        return res
+          .status(400)
+          .send({ message: "El dni ya se encuentra asignado a otro usuario" });
+      }
+    }
+
+    const userFound = await User.findOne({
+      where: { email: email },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (userFound) {
+      if (userFound.email == email) {
+        return res.status(400).send({
+          message: "El correo ya se encuentra asignado a otro usuario",
+        });
+      }
+    }
+
+    let image = null;
+    let namefile = null;
+
+    if (validate_img) {
+      const fileName =
+        id +
+        "-userProfile-" +
+        Math.floor(Math.random() * (999999999 - 111111111 + 1) + 111111111);
+
+      let base64Image = img.split(";base64,").pop();
+
+
+      fs.writeFileSync("img/userProfile/" + fileName + ".png", base64Image, {
+        encoding: "base64",
+      });
+
+      const fileZise = await getFilesizeInBytes(
+        "img/userProfile/" + fileName + ".png"
+      );
+
+      uploadLocalFile(
+        "img/userProfile/" + fileName + ".png",
+        fileName + ".png",
+        fileZise
+      );
+
+      const token = generateSasToken(containerName, fileName + ".png");
+      image = token.url;
+        console.log("line 251 generate sas token", token)
+        console.log("line 252 image url", image)
+      user.profile_image_name = fileName + ".png";
+
+      user.profile_image_url = image;
+
+      namefile = fileName;
+    }
+
+    user.boss = user.boss == "" ? null : user.boss;
+
+    const hashPassword = bcrypt.hashSync(password, 10);
+    if (!hashPassword)
+      return res
+        .status(400)
+        .send({ message: "Error. No se generó la contraseña." });
+
+    user.password = hashPassword;
+    await ereaserFile("img/userProfile/" + namefile + ".png");
+    
+    // console.log("user line 274",user)
+
+    const userCreated = await User.create(user);
+    if (!userCreated)
+      return res.status(400).send({ message: "Error. No se creó usuario." });
+
+      
+    res
+      .status(200)
+      .send({ message: "Usuario creado con éxito", user: userCreated });
+  } catch (error) {
+    // console.log("Hubo un error creando usuario: ", error);
+    console.log("There was an error creating user: ", error);
+    return res.status(400).send({ message: "Error creando usuario." });
+  }
+};
+
+const findAll = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const search2 = body.search2;
+    const idMunicapality = body.municipality_id;
+    const idDepartment = body.department_id;
+    const idCountry = body.country_id;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    const dni = body.dni;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "municipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else if (columnFilter == "dniType") {
+      order = [DniType, "spanish_name", typeFilter];
+    } else if (columnFilter == "country") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "department") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    let date = new Object();
+    if (idMunicapality == 0 || idMunicapality == undefined) {
+      date = true;
+    } else {
+      date = { municipality_id: idMunicapality };
+    }
+
+    let roleFilter = new Object();
+    if (search2 == 0 || search2 == undefined) {
+      roleFilter = true;
+    } else {
+      roleFilter = { role_id: search2 };
+    }
+
+    let departamentFilter = new Object();
+    if (idDepartment == 0 || idDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: idDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (idCountry == 0 || idCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: idCountry };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+        "role_id",
+      ],
+      paginate,
+
+      page,
+
+      include: [
+        {
+          model: Municipality,
+          //  required: false,
+          include: [
+            {
+              model: Department,
+              where: { [Op.and]: [CountryFilter] },
+              include: [{ model: Country }],
+            },
+          ],
+          where: { [Op.and]: [departamentFilter] },
+        },
+
+        // {
+        //   model: CostBody,
+        //   // required: true,
+        //   include: [{model: db.cost_Head, where: {[Op.or]: [{year: '2020'}]}}],
+        // },
+        { model: DniType },
+        { model: Role },
+      ],
+      where: {
+        [Op.and]: [date, roleFilter, states],
+        [Op.or]: [
+          {
+            dni: {
+              [Op.like]: `%${dni}%`,
+            },
+            namesQuery: Sequelize.where(
+              Sequelize.fn(
+                "concat",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("second_name"),
+                " ",
+                Sequelize.col("first_surname"),
+                " ",
+                Sequelize.col("second_surname")
+              ),
+              {
+                [Op.iLike]: `%${search}%`,
+              }
+            ),
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+const findAllFarms = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const search2 = body.search2;
+    const nameFarm = body.farm;
+    const idMunicapality = body.municipality_id;
+    const idDepartment = body.department_id;
+    const idCountry = body.country_id;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    const dni = body.dni;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "municipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else if (columnFilter == "dniType") {
+      order = [DniType, "spanish_name", typeFilter];
+    } else if (columnFilter == "country") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "department") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else if (columnFilter == "first_name") {
+      order = [User, columnFilter, typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+    console.log("body", body);
+
+    let departamentFilter = new Object();
+    if (idDepartment == 0 || idDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: idDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (idCountry == 0 || idCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: idCountry };
+    }
+
+    const allfarm = await Farm.paginate({
+      attributes: ["id", "farm_id", "name", "state_id"],
+      paginate,
+      page,
+      include: [
+        {
+          model: Municipality,
+          attributes: ["spanish_name"],
+          where: { [Op.and]: [departamentFilter] },
+          include: [
+            {
+              model: Department,
+              attributes: ["spanish_name"],
+              where: { [Op.and]: [CountryFilter] },
+              include: [{ model: Country, attributes: ["spanish_name"] }],
+            },
+          ],
+        },
+        {
+          model: User,
+          required: true,
+          attributes: [
+            "first_name",
+            "second_name",
+            "first_surname",
+            "second_surname",
+          ],
+          where: {
+            [Op.or]: [
+              {
+                dni: {
+                  [Op.like]: `%${dni}%`,
+                },
+
+                namesQuery: Sequelize.where(
+                  Sequelize.fn(
+                    "concat",
+                    Sequelize.col("caravela_user.first_name"),
+                    " ",
+                    Sequelize.col("caravela_user.second_name"),
+                    " ",
+                    Sequelize.col("caravela_user.first_surname"),
+                    " ",
+                    Sequelize.col("caravela_user.second_surname")
+                  ),
+                  {
+                    [Op.iLike]: `%${search}%`,
+                  }
+                ),
+              },
+            ],
+          },
+        },
+      ],
+      where: {
+        name: {
+          [Op.like]: `%${nameFarm}%`,
+        },
+        state_id: stateComing,
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: allfarm.docs, totals: allfarm.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo Fincas: ", error);
+    return res.status(400).send({ message: "Error obteniendo Fincas." });
+  }
+};
+//
+const findAllFilter = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search; // )(NOmbres y apellidos)
+    const searchByGender = body.searchByGender;
+    const searchBydni = body.searchBydni;
+    const searchByLastName = body.searchByLastName;
+    const searchDepartment = body.searchDepartment;
+    const searchByCountry = body.searchByCountry;
+    const searchByRole = body.searchByRole;
+    const idMunicapality = body.municipality_id;
+    const searchByRoleId =
+      body.searchByRoleId == undefined
+        ? true
+        : { role_id: body.searchByRoleId };
+    let date = [];
+    let dateDepartment = [];
+    let dateGender = [];
+    let dateCountry = [];
+
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "name") {
+      order = ["first_name", typeFilter];
+    } else if (columnFilter == "farm") {
+      order = [Farm, "name", typeFilter];
+    } else if (columnFilter == "nameCountry") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "nameDepartament") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else if (columnFilter == "nameMunicipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+
+    let whereUser = {
+      $: Sequelize.where(
+        Sequelize.fn(
+          "concat",
+          Sequelize.col("first_name"),
+          Sequelize.col("second_name"),
+          Sequelize.col("first_surname"),
+          Sequelize.col("second_surname")
+        ),
+        "Ilike",
+        `%${search ? search : ""}%`
+      ),
+      [Op.and]: [searchByRoleId],
+      role: { [Op.iLike]: `%${searchByRole ? searchByRole : ""}%` },
+      dni: { [Op.iLike]: `%${searchBydni ? searchBydni : ""}%` },
+    };
+    let WhereDeparment = {};
+    let WhereCountry = {};
+    if (idMunicapality !== 0 && idMunicapality !== undefined) {
+      whereUser.municipality_id = idMunicapality;
+    }
+
+    let departamentFilter = new Object();
+    if (searchDepartment == 0 || searchDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: searchDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (searchByCountry == 0 || searchByCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: searchByCountry };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+      ],
+      paginate,
+      subQuery: false,
+
+      page,
+      include: [
+        {
+          model: Municipality,
+          where: { [Op.and]: [departamentFilter] },
+          required: true,
+          include: [
+            {
+              model: Department,
+              where: { [Op.and]: [CountryFilter] },
+              required: true,
+              include: [
+                {
+                  model: Country,
+                  required: true,
+                },
+              ],
+            },
+          ],
+        },
+        { model: Farm, attributes: ["name"] },
+      ],
+      where: whereUser,
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findById = async (req, res) => {
+  const body = req.body;
+  const page = body.page;
+  const paginate = body.paginate;
+  const search = body.search;
+
+  console.log(req.body);
+  const user = await User.paginate({
+    attributes: [
+      "id",
+      "caravela_user_id",
+      "dni",
+      "role",
+      "first_name",
+      "second_name",
+      "first_surname",
+      "second_surname",
+      "birthdate",
+      "address",
+      "cellphone",
+      "email",
+      "how_did_you_find_out",
+      "has_assigned_technician",
+      "has_association",
+      "society_name",
+      "user_approved",
+      "terms_accepted",
+      "status",
+      "civil_status_id",
+      "dni_type_id",
+      "gender_id",
+      "municipality_id",
+      "user_type_id",
+      "boss",
+      "technician_assigned_id",
+      "scholarship_id",
+      "profile_image_url",
+      "dni_associated",
+      "check_coffee",
+      "how_did_you_find_out",
+      "state_id",
+      "from_producer",
+      "from_technician",
+      "role_id",
+    ],
+    paginate,
+
+    page,
+
+    include: [
+      {
+        model: Municipality,
+        include: [{ model: Department, include: [{ model: Country }] }],
+      },
+
+      { model: DniType, include: [{ model: Country }] },
+    ],
+    where: {
+      caravela_user_id: {
+        [Op.like]: `%${search}%`,
+      },
+    },
+  });
+  res.status(200).send({ results: user.docs, totals: user.total });
+
+  // try {
+  //   const id = req.params.id;
+  //   const userFound = await User.findOne({ where: { caravela_user_id: id } });
+  //   if (!userFound)
+  //     return res.status(200).send({ message: "No se encontró usuario." });
+
+  //   userFound.password = null;
+
+  //   res.status(200).send({ user: userFound });
+  // } catch (error) {
+  //   console.log("Hubo un error obteniendo usuario: ", error);
+  //   return res.status(400).send({ message: "Error obteniendo usuario." });
+  // }
+};
+
+const update = async (req, res) => {
+  try {
+    const user = req.body;
+    const id = user.caravela_user_id;
+    const dni = user.dni;
+    const role = user.role;
+    const first_name = user.first_name;
+    const second_name = user.second_name;
+    const first_surname = user.first_surname;
+    const second_surname = user.second_surname;
+    const birthdate = user.birthdate;
+    const address = user.address;
+    const cellphone = user.cellphone;
+    const email = user.email;
+    const has_assigned_technician = user.has_assigned_technician;
+    const has_associantion = user.has_associantion;
+    const society_name = user.society_name;
+    const user_approved = user.user_approved;
+    const terms_accepted = user.terms_accepted;
+    const tokenFirebase = user.tokenFirebase;
+    const profile_image_url = user.profile_image_url;
+    console.log("line 815 ---profile_image_url",profile_image_url)
+
+    const profile_image_name = user.profile_image_name;
+    const status = user.status;
+    const civil_status_id = user.civil_status_id;
+    const dni_type_id = user.dni_type_id;
+    const gender_id = user.gender_id;
+    const municipality_id = user.municipality_id;
+    const user_type_id = user.user_type_id;
+    const boss = user.boss;
+    const technician_assigned_id = user.technician_assigned_id;
+    const scholarship_id = user.scholarship_id;
+    const img = user.profile_img;
+    const validate_img = user.validate_img;
+    const dni_associated = user.dni_associated;
+    const check_coffee = user.check_coffee;
+    const how_did_you_find_out = user.how_did_you_find_out;
+    const creatorRoleType = user.creatorRoleType;
+    const preDNI = user.preDNI;
+    const userUpdate = await User.findOne({
+      where: { caravela_user_id: id },
+    });
+
+    //
+    console.log("preDni",preDNI);
+    console.log("dni",dni);
+
+    console.log("userupdate line 842", userUpdate.profile_image_url)
+
+    if (!userUpdate) {
+      return res.status(400).send({ message: "No se encontró usuario." });
+    }
+    if (dni != preDNI) {
+      const userExist = await User.findOne({
+        where: { dni: dni, role_id: role },
+      });
+
+      if (userExist) {
+        return res
+          .status(400)
+          .send({ message: "Ya existe un usuario con el DNI ingresado" });
+      }
+    }
+
+    
+    // let image = null;
+    let image = userUpdate.profile_image_url;
+    let namefile = null;
+
+    if (validate_img) { 
+      const fileName =
+        id +
+        "-userProfile-" +
+        Math.floor(Math.random() * (999999999 - 111111111 + 1) + 111111111);
+
+      let base64Image = img.split(";base64,").pop();
+
+      fs.writeFileSync("img/userProfile/" + fileName + ".png", base64Image, {
+        encoding: "base64",
+      });
+
+      const fileZise = await getFilesizeInBytes(
+        "img/userProfile/" + fileName + ".png"
+      );
+
+      uploadLocalFile(
+        "img/userProfile/" + fileName + ".png",
+        fileName + ".png",
+        fileZise
+      );
+
+      const token = generateSasToken(containerName, fileName + ".png");
+      image = token.url;
+
+      userUpdate.profile_image_name = fileName + ".png";
+      namefile = fileName;
+    }
+
+    if (
+      userUpdate.technician_assigned_id &&
+      userUpdate.technician_assigned_id != null &&
+      userUpdate.technician_assigned_id != undefined &&
+      userUpdate.technician_assigned_id != 0
+    ) {
+      if (technician_assigned_id != userUpdate.technician_assigned_id) {
+        await db.ModifyUser.create({
+          tech_from: userUpdate.technician_assigned_id,
+          tech_to: technician_assigned_id,
+          producer: userUpdate.id,
+        });
+      }
+    }
+
+    userUpdate.role_id = user.role;
+
+    if (parseInt(user.role) == 1) userUpdate.role = "Administrador";
+
+    if (parseInt(user.role) == 2) userUpdate.role = "caravela-peca-coord-role";
+
+    if (parseInt(user.role) == 3) userUpdate.role = "caravela-peca-tech-role";
+
+    if (parseInt(user.role) == 4) userUpdate.role = "caravela-producer-role";
+
+    if (
+      userUpdate.technician_assigned_id == null ||
+      userUpdate.technician_assigned_id == ""
+    ) {
+      if (parseInt(user.role) == 4) {
+        if (technician_assigned_id != null && technician_assigned_id != "") {
+          //Notificar el técnico que se la asociado un productor
+          const userSearchTechnician = await User.findOne({
+            where: [{ id: technician_assigned_id }],
+            attributes: ["tokenFirebase"],
+          });
+
+          if (userSearchTechnician.tokenFirebase) {
+            const message = {
+              data: {
+                notification_foreground: "true",
+                type: "notification_create",
+              },
+              token: userSearchTechnician.tokenFirebase,
+              name: "my_notification_arabica",
+              notification: {
+                body:
+                  "Se le ha asociado el prodcutor " +
+                  first_name +
+                  " " +
+                  first_surname,
+                title: "Asociación de un nuevo productor",
+              },
+            };
+
+            // Enviar mensaje Firebase
+            admin
+              .messaging()
+              .send(message)
+              .then((response) => {
+                // Response is a message ID string.
+                console.log("Successfully sent message:", response);
+              })
+              .catch((error) => {
+                console.log("Error sending message:", error);
+              });
+          }
+
+          //Notificar el prodcutor que ya tiene un técnico asociado
+          if (
+            userUpdate.tokenFirebase != "" &&
+            userUpdate.tokenFirebase != null
+          ) {
+            const userSearchTechnician = await User.findOne({
+              where: [{ id: technician_assigned_id }],
+              attributes: ["first_name", "second_surname"],
+            });
+
+            const message = {
+              data: {
+                notification_foreground: "true",
+                type: "notification_create",
+              },
+              token: userUpdate.tokenFirebase,
+              name: "my_notification_arabica",
+              notification: {
+                body:
+                  "Usted fue asociado al técnico " +
+                  userSearchTechnician.first_name +
+                  " " +
+                  userSearchTechnician.first_surname,
+                title: "Fue asociado a un técnico",
+              },
+            };
+
+            // Enviar mensaje Firebase
+            admin
+              .messaging()
+              .send(message)
+              .then((response) => {
+                // Response is a message ID string.
+                console.log("Successfully sent message:", response);
+              })
+              .catch((error) => {
+                console.log("Error sending message:", error);
+              });
+          }
+
+          await db.MessageHead.update(
+            { technicial_id: technician_assigned_id },
+            {
+              where: {
+                user_id: userUpdate.id,
+                technicial_id: {
+                  [Op.eq]: null,
+                },
+              },
+            }
+          );
+        }
+      }
+    }
+
+    userUpdate.dni = dni;
+    userUpdate.first_name = first_name;
+    userUpdate.second_name = second_name;
+    userUpdate.first_surname = first_surname;
+    userUpdate.second_surname = second_surname;
+    userUpdate.birthdate = birthdate;
+    userUpdate.address = address;
+    userUpdate.cellphone = cellphone;
+    userUpdate.email = email;
+    userUpdate.has_assigned_technician = has_assigned_technician;
+    userUpdate.has_associantion = has_associantion;
+    userUpdate.society_name = society_name;
+    userUpdate.user_approved = user_approved;
+    userUpdate.terms_accepted = terms_accepted;
+    userUpdate.status = status;
+    userUpdate.civil_status_id = civil_status_id;
+    userUpdate.dni_type_id = dni_type_id;
+    userUpdate.gender_id = gender_id;
+    userUpdate.municipality_id = municipality_id;
+    userUpdate.user_type_id = user_type_id;
+    userUpdate.boss = boss == "" ? null : boss;
+    userUpdate.technician_assigned_id = technician_assigned_id;
+    userUpdate.scholarship_id = scholarship_id;
+    userUpdate.profile_image_url = image;
+
+    console.log("line 1031 profile_image_url"+profile_image_url)
+    console.log("line 1032 profile_image_url"+image)
+    userUpdate.dni_associated = dni_associated;
+    userUpdate.check_coffee = check_coffee;
+    userUpdate.how_did_you_find_out = how_did_you_find_out;
+    userUpdate.creatorRoleType = creatorRoleType;
+    const userUp = await userUpdate.save();
+    await ereaserFile("img/userProfile/" + namefile + ".png"); //borra imagen subida
+    if (!userUp)
+      return res
+        .status(400)
+        .send({ message: "Error. No se actualizo usuario." });
+
+    res
+      .status(200)
+      .send({ message: "Usuario actualizada con éxito", user: userUp });
+  } catch (error) {
+    console.log("Hubo un error actualizando Usuario: ", error);
+    return res.status(400).send({ message: "Error actualizando el usuario." });
+  }
+};
+const deleteOne = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const caravela_userDeleted = await User.findOne({
+      where: { caravela_user_id: id, deleteAt: null, state_id: 1 },
+    });
+    if (!caravela_userDeleted) {
+      return res.status(404).send({
+        message:
+          "No se encontro el usuario que desea eliminar o ya esta eliminado",
+      });
+    }
+    await User.update(
+      { deleteAt: Sequelize.fn("NOW"), state_id: 2 },
+      { where: { caravela_user_id: id } }
+    );
+    res.status(200).send({
+      message: "usuario borrado con éxito",
+      caravela_user: caravela_userDeleted,
+    });
+  } catch (error) {
+    console.log("Hubo un error borrando usuario: ", error);
+    return res.status(400).send({ message: "Error borrando usuario." });
+  }
+};
+
+const recoveryPasswordEmail = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+    let userFound = null;
+
+    if (req.body.role_id === 1) {
+      userFound = await User.findOne({
+        where: {
+          dni: req.body.dni,
+          email: {
+            [Op.iLike]: `${req.body.email}`,
+          },
+        },
+      });
+    } else {
+      return res.status(400).send({ message: "El usuario no existe" });
+    }
+    if (userFound) {
+      await User.update(
+        { password: bcrypt.hashSync("caravela123", 10) },
+        { where: { dni: req.body.dni, email: req.body.email } }
+      );
+      let html =
+        "<p> Hola, " +
+        userFound.first_name +
+        " " +
+        userFound.first_surname +
+        " </p>";
+      html +=
+        "<br /> Tú contraseña ha sido reestablecida: caravela123 <br /><p>Recuerda cambiarla</p>";
+      if (
+        await emailService.sendEmail({
+          to: userFound.email,
+          from: "info@arabica-app.com",
+          html,
+          subject: "? Recuperación de contraseña",
+        })
+      ) {
+        return res.status(200).send({
+          message:
+            "Se ha enviado correctamente el email al correo " + req.body.email,
+          id: 1,
+        });
+      } else {
+        return res.status(400).send({
+          message:
+            "Existen problemas con el envío del corre electrónico, por favor intentalo más tarde.",
+          id: 0,
+        });
+      }
+    } else
+      return res.status(400).send({ message: "El usuario no existe", id: 0 });
+  } catch (error) {
+    return res.status(400).send({ message: error });
+  }
+};
+
+const updateEnable = async (req, res) => {
+  try {
+    const user = req.body;
+    const id = user.caravela_user_id;
+    const state_id = user.state_id;
+
+    if (!hasSomething(state_id))
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+
+    const userUpdate = await User.findOne({
+      where: { caravela_user_id: id },
+    });
+
+    if (!userUpdate)
+      return res.status(400).send({ message: "No se encontró usuario." });
+
+    const userUp = await User.update(
+      {
+        deleteAt: user.deleteAt,
+        state_id: state_id,
+      },
+      { where: { caravela_user_id: id } }
+    );
+    if (!userUp)
+      return res
+        .status(400)
+        .send({ message: "Error. No se actualizo usuario." });
+    console.log(userUp);
+    res
+      .status(200)
+      .send({ message: "Usuario habilitado con éxito", user: userUp });
+  } catch (error) {
+    console.log("Hubo un error habilitado Usuario: ", error);
+    return res.status(400).send({ message: "Error habilitado el usuario." });
+  }
+};
+
+const updateEnableFarm = async (req, res) => {
+  try {
+    const farm = req.body;
+    const id = farm.farm_id;
+    const state_id = farm.state_id;
+
+    if (!hasSomething(state_id))
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+
+    const farmUpdate = await Farm.findOne({
+      where: { farm_id: id },
+    });
+
+    if (!farmUpdate)
+      return res.status(400).send({ message: "No se encontró finca." });
+
+    const farmUp = await Farm.update(
+      {
+        updatedAt: farm.updatedAt,
+        state_id: state_id,
+      },
+      { where: { farm_id: id } }
+    );
+    if (!farmUp)
+      return res
+        .status(400)
+        .send({ message: "Error. No se actualizo la finca ." });
+    console.log(farmUp);
+    res
+      .status(200)
+      .send({ message: "Finca habilitada con éxito", user: farmUp });
+  } catch (error) {
+    console.log("Hubo un error habilitado finca: ", error);
+    return res.status(400).send({ message: "Error habilitado el finca." });
+  }
+};
+
+const findAllByTechnical = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const technical = body.Tec;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+    let idUser;
+    if (!technical) {
+      const decoded = jwt.decode(
+        req.headers.authorization.split(" ")[1],
+        config.secretJWT
+      );
+      idUser = decoded.id_user;
+    } else {
+      idUser = technical;
+    }
+
+    const decoded = jwt.decode(
+      req.headers.authorization.split(" ")[1],
+      config.secretJWT
+    );
+    console.log(decoded.id_user);
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+      ],
+      paginate,
+
+      page,
+
+      where: {
+        [Op.and]: [{ state_id: 1 }, { boss: idUser }],
+        [Op.or]: [
+          {
+            caravela_user_id: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findAllByProducer = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const technical = body.Tec;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+    let idUser;
+    if (!technical) {
+      const decoded = jwt.decode(
+        req.headers.authorization.split(" ")[1],
+        config.secretJWT
+      );
+      idUser = decoded.id_user;
+    } else {
+      idUser = technical;
+    }
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+      ],
+      paginate,
+
+      page,
+
+      where: {
+        [Op.and]: [{ state_id: 1 }, { technician_assigned_id: idUser }],
+        [Op.or]: [
+          {
+            caravela_user_id: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findAllByAdmin = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+      ],
+      paginate,
+
+      page,
+
+      where: {
+        [Op.and]: [{ state_id: 1 }, { role_id: 2 }],
+        [Op.or]: [
+          {
+            caravela_user_id: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findAllFilterTech = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search; // )(NOmbres y apellidos)
+
+    const decoded = jwt.decode(
+      req.headers.authorization.split(" ")[1],
+      config.secretJWT
+    );
+    const iduser = decoded.id_user;
+
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+
+    let order = ["first_name", "asc"];
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+      ],
+      paginate,
+
+      page,
+
+      where: { boss: iduser },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+const findByTecId = async (req, res) => {
+  // no uuid
+  try {
+    const id = req.params.id;
+    const userFound = await User.findOne({
+      where: { id: id },
+      attributes: ["id", "role_id"],
+    });
+    if (!userFound)
+      return res.status(200).send({ message: "No se encontró usuario." });
+
+    res.status(200).send({ user: userFound });
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuario: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuario." });
+  }
+};
+
+const findAllProducerCost = async (req, res) => {
+  try {
+    const body = req.body;
+    const page = body.page;
+    const paginate = body.paginate;
+    const search = body.search;
+    const search2 = body.search2;
+    const idMunicapality = body.municipality_id;
+    const idDepartment = body.department_id;
+    const idCountry = body.country_id;
+    const stateComing = body.state;
+    const columnFilter = body.columnFilter;
+    const typeFilter = body.typeFilter;
+    const year = body.year;
+    const dni = body.dni;
+    let order = [];
+    //let order = ['spanish_name', 'asc']
+
+    if (columnFilter == "municipality") {
+      order = [Municipality, "spanish_name", typeFilter];
+    } else if (columnFilter == "dniType") {
+      order = [DniType, "spanish_name", typeFilter];
+    } else if (columnFilter == "country") {
+      order = [Municipality, Department, Country, "spanish_name", typeFilter];
+    } else if (columnFilter == "department") {
+      order = [Municipality, Department, "spanish_name", typeFilter];
+    } else {
+      order = [columnFilter, typeFilter];
+    }
+
+    let states = new Object();
+
+    if (stateComing == undefined || stateComing == 0) {
+      states = true;
+    } else {
+      states = { state_id: stateComing };
+    }
+
+    let date = new Object();
+    if (idMunicapality == 0 || idMunicapality == undefined) {
+      date = true;
+    } else {
+      date = { municipality_id: idMunicapality };
+    }
+
+    let roleFilter = new Object();
+    if (search2 == 0 || search2 == undefined) {
+      roleFilter = true;
+    } else {
+      roleFilter = { role_id: search2 };
+    }
+
+    let yearCostFilter = new Object();
+    if (year == 0 || year == undefined) {
+      yearCostFilter = true;
+    } else {
+      yearCostFilter = { year: year };
+    }
+
+    let departamentFilter = new Object();
+    if (idDepartment == 0 || idDepartment == undefined) {
+      departamentFilter = true;
+    } else {
+      departamentFilter = { department_id: idDepartment };
+    }
+
+    let CountryFilter = new Object();
+    if (idCountry == 0 || idCountry == undefined) {
+      CountryFilter = true;
+    } else {
+      CountryFilter = { country_id: idCountry };
+    }
+
+    const user = await User.paginate({
+      attributes: [
+        "id",
+        "caravela_user_id",
+        "dni",
+        "role",
+        "first_name",
+        "second_name",
+        "first_surname",
+        "second_surname",
+        "birthdate",
+        "address",
+        "cellphone",
+        "email",
+        "has_assigned_technician",
+        "has_association",
+        "society_name",
+        "user_approved",
+        "terms_accepted",
+        "status",
+        "civil_status_id",
+        "dni_type_id",
+        "gender_id",
+        "municipality_id",
+        "user_type_id",
+        "boss",
+        "technician_assigned_id",
+        "scholarship_id",
+        "profile_image_url",
+        "dni_associated",
+        "check_coffee",
+        "state_id",
+        "role_id",
+      ],
+      paginate,
+
+      page,
+
+      include: [
+        {
+          model: Municipality,
+          //  required: false,
+          include: [
+            {
+              model: Department,
+              where: { [Op.and]: [CountryFilter] },
+              include: [{ model: Country }],
+            },
+          ],
+          where: { [Op.and]: [departamentFilter] },
+        },
+
+        {
+          model: CostBody,
+          // required: true,
+          include: [
+            { model: db.cost_Head, where: { [Op.and]: [yearCostFilter] } },
+          ],
+        },
+        { model: DniType },
+        { model: Role },
+      ],
+      where: {
+        [Op.and]: [date, roleFilter, states],
+        [Op.or]: [
+          {
+            dni: {
+              [Op.like]: `%${dni}%`,
+            },
+            namesQuery: Sequelize.where(
+              Sequelize.fn(
+                "concat",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("second_name"),
+                " ",
+                Sequelize.col("first_surname"),
+                " ",
+                Sequelize.col("second_surname")
+              ),
+              {
+                [Op.iLike]: `%${search}%`,
+              }
+            ),
+          },
+        ],
+      },
+      order: [order],
+    });
+    res.status(200).send({ results: user.docs, totals: user.total });
+
+    //
+  } catch (error) {
+    console.log("Hubo un error obteniendo usuarios: ", error);
+    return res.status(400).send({ message: "Error obteniendo usuarios." });
+  }
+};
+
+export default {
+  create,
+  update,
+  findAll,
+  findAllFilter,
+  findById,
+  deleteOne,
+  updateEnable,
+  updateEnableFarm,
+  recoveryPasswordEmail,
+  findAllByTechnical,
+  findAllByProducer,
+  findAllByAdmin,
+  findByTecId,
+  findAllFilterTech,
+  findAllFarms,
+  findAllProducerCost,
+};
+
+
+
+farm controller
+
+
+import uuid from "uuid/v4";
+import moment from "moment-timezone";
+import connection from "../connection/db";
+import db from "../connection/models/index";
+import Sequelize from "sequelize";
+import parserService from "../services/parser.service";
+import path, { dirname } from "path";
+import azure from "azure-storage";
+import JSZip from "jszip";
+import fs from "fs";
+import updateUser from "../services/update.services";
+import {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+} from "@azure/storage-blob";
+
+import ServiceAtlasCurl from "../services/atlascurl.service";
+import { file } from "jszip/lib/object";
+const Op = Sequelize.Op;
+
+const STORAGE_ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+const ACCOUNT_ACCESS_KEY = process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY;
+
+const sharedKeyCredential = new StorageSharedKeyCredential(
+  STORAGE_ACCOUNT_NAME,
+  ACCOUNT_ACCESS_KEY
+);
+const connString = `https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`;
+
+const blobServiceClient = new BlobServiceClient(
+  connString,
+  sharedKeyCredential
+);
+
+const containerName = "farm-pictures";
+
+async function uploadLocalFile(path, fileName) {
+  const containerClient = await blobServiceClient.getContainerClient(
+    containerName
+  );
+  const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+
+  const buffer = fs.readFileSync(path);
+
+  const uploadBlobResponse = await blockBlobClient.upload(
+    buffer,
+    buffer.byteLength
+  );
+  if (!uploadBlobResponse) {
+    return false;
+  } else {
+    return true;
+  }
+}
+const getFilesizeInBytes = (filename) => {
+  var stats = fs.statSync(filename);
+  var fileSizeInBytes = stats["size"];
+  return fileSizeInBytes;
+};
+const ereaserFile = (filename) => {
+  if (fs.existsSync(filename)) {
+    fs.unlinkSync(filename);
+  }
+};
+
+const generateSasToken = (container, blobName) => {
+  const connString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const blobService = azure.createBlobService(connString);
+
+  const startDate = new Date();
+  startDate.setMinutes(startDate.getMinutes() - 5);
+  const expiryDate = new Date(startDate);
+  expiryDate.setFullYear(2100);
+
+  const permissions =
+    azure.BlobUtilities.SharedAccessPermissions.READ +
+    azure.BlobUtilities.SharedAccessPermissions.LIST;
+  const sharedAccessPolicy = {
+    AccessPolicy: {
+      Permissions: permissions,
+      Start: startDate,
+      Expiry: expiryDate,
+    },
+  };
+
+  const sasToken = blobService.generateSharedAccessSignature(
+    container,
+    blobName,
+    sharedAccessPolicy
+  );
+  return {
+    token: sasToken,
+    url: blobService.getUrl(container, blobName, sasToken, true),
+  };
+};
+
+const deleteImage = async (req, res) => {
+  try {
+    const body = req.body;
+    const fileName = body.image.fileName;
+    const farm = body.farm;
+    const farmId = farm.farm_id;
+
+    const containerClient = await blobServiceClient.getContainerClient(
+      containerName
+    );
+    const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+
+    const deleteBlobResponse = await blockBlobClient.delete();
+    if (!deleteBlobResponse) {
+      return res
+        .status(400)
+        .send({ message: "Error. No se borró la imagen.", success: false });
+    }
+
+    const farmFound = await Farm.findOne({ where: { farm_id: farmId } });
+    if (!farmFound)
+      return res
+        .status(400)
+        .send({ message: "Error. No se encontró la finca.", success: false });
+
+    let media = farmFound.dataValues.media;
+    if (media && media.length && media.length > 0) {
+      let i = 0;
+      let found = false;
+      while (i < media.length && !found) {
+        if (media[i].fileName == fileName) {
+          media.splice(i, 1);
+          found = true;
+        }
+        i++;
+      }
+      const farmUpdated = await Farm.update(
+        { media: media },
+        { where: { farm_id: farmId } }
+      );
+      if (!farmUpdated)
+        return res.status(400).send({
+          message: "Error. No se actualizó la finca.",
+          success: false,
+        });
+      return res
+        .status(200)
+        .send({ message: "Se borró la imagen exitosamente." });
+    }
+    return res
+      .status(400)
+      .send({ message: "Hubo un error borrando imagen del contenedor." });
+  } catch (error) {
+    console.log("Hubo un error borrando imagen del contenedor: ", error);
+    return res
+      .status(400)
+      .send({ message: "Hubo un error borrando imagen del contenedor." });
+  }
+};
+
+const Certification = db.certification;
+const Country = db.country;
+const Department = db.department;
+const DryingMethod = db.drying_method;
+const Farm = db.farm;
+const FarmCertification = db.farm_certification;
+const FarmDryingMethod = db.farm_drying_method;
+const FarmFermentationType = db.farm_fermentation_type;
+const FarmFlycropPeriod = db.farm_flycrop_period;
+const FarmHarvestPeriod = db.farm_harvest_period;
+const FarmProcessType = db.farm_procces_type;
+const FermentationType = db.fermentation_type;
+const Municipality = db.municipality;
+const ProcessType = db.process_type;
+const User = db.caravela_user;
+const photosFarms = db.photoFarm;
+
+const hasSomething = (string) => {
+  if (string !== null && string !== undefined && string !== "") {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+const create = async (req, res) => {
+  try {
+    // Se crea el uuid de la finca
+    let farmId = null;
+    let id = null;
+    const farm = req.body;
+    farm.farm_id = uuid();
+    id = farm.farm_id;
+
+    //Se verifica si viene el id de municipio
+    if (farm.id_municipality) {
+      const MunicipalityExists = await Municipality.findOne({
+        attributes: ["id"],
+        where: { municipality_id: farm.id_municipality },
+      });
+      if (!MunicipalityExists)
+        return res
+          .status(400)
+          .send({ message: "El municipio ingresado no existe en BD." });
+      farm.id_municipality = MunicipalityExists.id;
+    }
+    // Se verifica que los datos lleguen completos
+    const farmName = farm.name;
+    const userId = farm.user_id;
+
+    if (!hasSomething(farmName) || !hasSomething(userId)) {
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+    }
+
+    const userExists = await User.findOne({
+      where: { caravela_user_id: userId },
+    });
+    if (!userExists)
+      return res
+        .status(400)
+        .send({ message: "El productor ingresado no existe en BD." });
+
+    farm.user_id = userExists.dataValues.id;
+    const userFarm = userExists.dataValues.id;
+
+    const farmFound = await Farm.findOne({
+      where: { user_id: userFarm, name: farmName },
+    });
+    if (farmFound)
+      return res.status(400).send({ message: "La finca ya existe en BD." });
+
+    // Se crea la finca
+    const farmCreated = await Farm.create(farm);
+    await updateUser.refreshUser(farm.user_id);
+
+    if (!farmCreated.dataValues)
+      return res.status(400).send({ message: "Error. Creando finca." });
+
+    farmId = farmCreated.dataValues.id;
+
+    if (!farmCreated)
+      return res.status(400).send({ message: "Error. No se creó finca." });
+
+    // Se crean los métodos de secado
+    const farmDryingMethods = farm.drying_methods;
+
+    const newFarmDryMeths = new Array();
+    let farmDryingMethod_id;
+
+    if (
+      farmDryingMethods &&
+      farmDryingMethods.length &&
+      farmDryingMethods.length > 0
+    ) {
+      for (let i = 0; i < farmDryingMethods.length; i++) {
+        farmDryingMethod_id = uuid();
+        newFarmDryMeths.push({
+          unique_id: farmDryingMethod_id,
+          farm_id: farmId,
+          drying_method_id: farm.drying_methods[i].id,
+          drying_time: farm.drying_methods[i].farm_drying_method.drying_time,
+        });
+      }
+
+      const farmDryingMethodsUpdated = await FarmDryingMethod.bulkCreate(
+        newFarmDryMeths,
+        {
+          validate: true,
+        }
+      );
+
+      if (!farmDryingMethodsUpdated) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los métodos de secado. Intente nuevamente.",
+        });
+      }
+    }
+
+    // Se crean los métodos de fermentación
+
+    const farmFermentationTypes = farm.fermentations;
+    const newFarmFermTypes = new Array();
+    let farmFermentationTypes_id;
+    if (
+      farmFermentationTypes &&
+      farmFermentationTypes.length &&
+      farmFermentationTypes.length > 0
+    ) {
+      for (let i = 0; i < farmFermentationTypes.length; i++) {
+        farmFermentationTypes_id = uuid();
+        newFarmFermTypes.push({
+          unique_id: farmFermentationTypes_id,
+          farm_id: farmId,
+          fermentation_type_id: farm.fermentations[i].id,
+        });
+      }
+
+      const farmFermentationTypesUpdated = await FarmFermentationType.bulkCreate(
+        newFarmFermTypes,
+        {
+          validate: true,
+        }
+      );
+
+      if (!farmFermentationTypesUpdated) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de fermentación. Intente nuevamente.",
+        });
+      }
+    }
+
+    // Se guardan los tipos de proceso
+    const farmProcessTypes = farm.typeProceses;
+    const newFarmProcTypes = new Array();
+    let farmtypeProceses_id;
+    if (
+      farmProcessTypes &&
+      farmProcessTypes.length &&
+      farmProcessTypes.length > 0
+    ) {
+      for (let i = 0; i < farmProcessTypes.length; i++) {
+        farmtypeProceses_id = uuid();
+        newFarmProcTypes.push({
+          unique_id: farmtypeProceses_id,
+          farm_id: farmId,
+          process_type_id: farm.typeProceses[i].id,
+        });
+      }
+
+      const farmProcessTypesUpdated = await FarmProcessType.bulkCreate(
+        newFarmProcTypes,
+        {
+          validate: true,
+        }
+      );
+
+      if (!farmProcessTypesUpdated) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    const farmCerts = new Array();
+    const certifications = farm.certifications;
+
+    let certifications_id;
+    if (
+      farm.has_certifications &&
+      farm.certifications &&
+      farm.certifications.length > 0
+    ) {
+      for (let i = 0; i < certifications.length; i++) {
+        certifications_id = uuid();
+        farmCerts.push({
+          unique_id: certifications_id,
+          farm_id: farmId,
+          certification_id: farm.certifications[i].id,
+        });
+      }
+
+      const farmCertifications = await FarmCertification.bulkCreate(farmCerts, {
+        validate: true,
+      });
+
+      if (!farmCertifications) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    if (farm.harvests && farm.harvests.length > 0) {
+      const newHarvest = new Array();
+      const harvests = farm.harvests;
+
+      let harvest_id;
+
+      for (let i = 0; i < harvests.length; i++) {
+        harvest_id = uuid();
+        newHarvest.push({
+          unique_id: harvest_id,
+          farm_id: farmId,
+          start: farm.harvests[i].start,
+          end: farm.harvests[i].end,
+        });
+      }
+
+      const farmHarvests = await FarmHarvestPeriod.bulkCreate(newHarvest, {
+        validate: true,
+      });
+
+      if (!farmHarvests) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    if (farm.flycrops && farm.flycrops.length > 0) {
+      const newFlycrops = new Array();
+      const flycrops = farm.flycrops;
+
+      let flycrops_id;
+
+      for (let i = 0; i < flycrops.length; i++) {
+        flycrops_id = uuid();
+        newFlycrops.push({
+          unique_id: flycrops_id,
+          farm_id: farmId,
+          start: farm.flycrops[i].start,
+          end: farm.flycrops[i].end,
+        });
+      }
+
+      const farmFlycrops = await FarmFlycropPeriod.bulkCreate(newFlycrops, {
+        validate: true,
+      });
+
+      if (!farmFlycrops) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    res.status(200).send({
+      message: "Finca creada con éxito",
+      uuid: farmCreated.dataValues.farm_id,
+    });
+  } catch (error) {
+    console.log("Hubo un error creando finca: ", error);
+    return res.status(400).send({ message: "Error creando finca." });
+  }
+};
+
+const update = async (req, res) => {
+  try {
+    const farm = req.body;
+    const body = req.body;
+    const id = farm.farm_id;
+
+    // Se verifica que los datos lleguen completos
+    const farmName = farm.name;
+
+    //Se verifica si viene el id de municipio
+    if (farm.id_municipality) {
+      const MunicipalityExists = await Municipality.findOne({
+        attributes: ["id"],
+        where: { municipality_id: farm.id_municipality },
+      });
+      if (!MunicipalityExists)
+        return res
+          .status(400)
+          .send({ message: "El municipio ingresado no existe en BD." });
+      farm.id_municipality = MunicipalityExists.id;
+    }
+
+    if (!hasSomething(farmName)) {
+      return res.status(400).send({
+        message: "Hacen falta ciertos datos para completar la consulta.",
+      });
+    }
+
+    const userId = farm.user_id;
+    const userExists = await User.findOne({ where: { id: userId } });
+    if (!userExists)
+      return res
+        .status(400)
+        .send({ message: "El productor ingresado no existe en BD." });
+
+    const farmFound = await Farm.findOne({ where: { farm_id: id } });
+    const idFarm = farmFound.dataValues.id;
+
+    if (!farmFound)
+      return res.status(400).send({ message: "La finca no existe." });
+
+    // Se actualiza la finca
+    const farmUpdated = await Farm.update(farm, {
+      where: { farm_id: id },
+    });
+    await updateUser.refreshUser(farm.user_id);
+    if (!farmUpdated)
+      return res.status(400).send({ message: "Error. No se actualizó finca." });
+    // Se actualizan los métodos de secado
+    let dryingMethods = farm.drying_methods;
+    const newDryMeths = new Array();
+    if (dryingMethods && dryingMethods.length && dryingMethods.length > 0) {
+      for (let i = 0; i < dryingMethods.length; i++) {
+        const currentItem = dryingMethods[i].farm_drying_method;
+        if (
+          hasSomething(currentItem.drying_method_id) &&
+          hasSomething(currentItem.farm_id)
+        ) {
+          newDryMeths.push(currentItem);
+        }
+      }
+    }
+
+    // farm.drying_methods = newDryMeths;
+    //delete
+    const dryMethodsDeleted = await FarmDryingMethod.destroy({
+      where: { farm_id: idFarm },
+    });
+
+    const farmDryingMethods = farm.drying_methods;
+
+    const newFarmDryMeths = new Array();
+    let farmDryingMethod_id;
+
+    if (
+      farmDryingMethods &&
+      farmDryingMethods.length &&
+      farmDryingMethods.length > 0
+    ) {
+      for (let i = 0; i < farmDryingMethods.length; i++) {
+        farmDryingMethod_id = uuid();
+        newFarmDryMeths.push({
+          unique_id: farmDryingMethod_id,
+          farm_id: idFarm,
+          drying_method_id: farm.drying_methods[i].id,
+          drying_time: farm.drying_methods[i].farm_drying_method.drying_time,
+        });
+      }
+
+      const farmDryingMethodsUpdated = await FarmDryingMethod.bulkCreate(
+        newFarmDryMeths,
+        {
+          validate: true,
+        }
+      );
+
+      if (!farmDryingMethodsUpdated) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los métodos de secado. Intente nuevamente.",
+        });
+      }
+    }
+
+    // Se actualizan los métodos de fermentación
+    const farmFermTypesDeleted = await FarmFermentationType.destroy({
+      where: { farm_id: idFarm },
+    });
+
+    const farmFermentationTypes = farm.fermentations;
+    const newFarmFermTypes = new Array();
+    let farmFermentationTypes_id;
+    if (
+      farmFermentationTypes &&
+      farmFermentationTypes.length &&
+      farmFermentationTypes.length > 0
+    ) {
+      for (let i = 0; i < farmFermentationTypes.length; i++) {
+        farmFermentationTypes_id = uuid();
+        newFarmFermTypes.push({
+          unique_id: farmFermentationTypes_id,
+          farm_id: idFarm,
+          fermentation_type_id: farm.fermentations[i].id,
+        });
+      }
+
+      const farmFermentationTypesUpdated = await FarmFermentationType.bulkCreate(
+        newFarmFermTypes,
+        {
+          validate: true,
+        }
+      );
+
+      if (!farmFermentationTypesUpdated) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de fermentación. Intente nuevamente.",
+        });
+      }
+    }
+
+    // Se actualizan los tipos de proceso
+
+    const farmProcessTypesDeleted = await FarmProcessType.destroy({
+      where: { farm_id: idFarm },
+    });
+
+    const farmProcessTypes = farm.typeProceses;
+    const newFarmProcTypes = new Array();
+    let farmtypeProceses_id;
+    if (
+      farmProcessTypes &&
+      farmProcessTypes.length &&
+      farmProcessTypes.length > 0
+    ) {
+      for (let i = 0; i < farmProcessTypes.length; i++) {
+        farmtypeProceses_id = uuid();
+        newFarmProcTypes.push({
+          unique_id: farmtypeProceses_id,
+          farm_id: idFarm,
+          process_type_id: farm.typeProceses[i].id,
+        });
+      }
+
+      const farmProcessTypesUpdated = await FarmProcessType.bulkCreate(
+        newFarmProcTypes,
+        {
+          validate: true,
+        }
+      );
+
+      if (!farmProcessTypesUpdated) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    // certification
+
+    const farmCertificationDeleted = await FarmCertification.destroy({
+      where: { farm_id: idFarm },
+    });
+
+    const farmCerts = new Array();
+    const certifications = farm.certifications;
+
+    let certifications_id;
+    if (farm.certifications && farm.certifications.length > 0) {
+      for (let i = 0; i < certifications.length; i++) {
+        certifications_id = uuid();
+        farmCerts.push({
+          unique_id: certifications_id,
+          farm_id: idFarm,
+          certification_id: farm.certifications[i].id,
+        });
+      }
+
+      const farmCertifications = await FarmCertification.bulkCreate(farmCerts, {
+        validate: true,
+      });
+
+      if (!farmCertifications) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    const farmHarvestPeriodDeleted = await FarmHarvestPeriod.destroy({
+      where: { farm_id: idFarm },
+    });
+
+    const newHarvest = new Array();
+    const harvests = farm.harvests;
+
+    let harvest_id;
+    if (farm.harvests && farm.harvests.length > 0) {
+      for (let i = 0; i < harvests.length; i++) {
+        harvest_id = uuid();
+        newHarvest.push({
+          unique_id: harvest_id,
+          farm_id: idFarm,
+          start: farm.harvests[i].start,
+          end: farm.harvests[i].end,
+        });
+      }
+
+      const farmHarvests = await FarmHarvestPeriod.bulkCreate(newHarvest, {
+        validate: true,
+      });
+
+      if (!farmHarvests) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    const farmFlycropPeriodDeleted = await FarmFlycropPeriod.destroy({
+      where: { farm_id: idFarm },
+    });
+
+    const newFlycrops = new Array();
+    const flycrops = farm.flycrops;
+
+    let flycrops_id;
+    if (farm.flycrops && farm.flycrops.length > 0) {
+      for (let i = 0; i < flycrops.length; i++) {
+        flycrops_id = uuid();
+        newFlycrops.push({
+          unique_id: flycrops_id,
+          farm_id: idFarm,
+          start: farm.flycrops[i].start,
+          end: farm.flycrops[i].end,
+        });
+      }
+
+      const farmFlycrops = await FarmFlycropPeriod.bulkCreate(newFlycrops, {
+        validate: true,
+      });
+
+      if (!farmFlycrops) {
+        return res.status(400).send({
+          message:
+            "Error. No se actualizaron los tipos de proceso. Intente nuevamente.",
+        });
+      }
+    }
+
+    //update.updateUserServices(userExists.caravela_user_id)
+
+    // Se borran los tipos de proceso que se actualizaron
+
+    // if (farm.has_certifications && farm.certifications && farm.certifications.length > 0) {
+    //     const certifications = farm.certifications;
+    //     const certLength = certifications.length;
+    //     const now = moment().toISOString();
+    //     for (let i = 0; i < certLength; i++) {
+    //         const currentCert = certifications[i];
+    //         let certDate = currentCert.certification_date;
+    //         if (certDate != null && certDate != undefined && certDate != '') {
+    //             certDate = `'${moment(currentCert.certification_date, 'YYYY/MM/DD').toISOString()}'`;
+    //         } else {
+    //             certDate = null;
+    //         }
+    //         const farmCertUpdated = await sequelize.query(`BEGIN TRAN
+    //         IF EXISTS (SELECT * FROM farm_certification WITH (updlock,serializable)
+    //         WHERE (farm_id = '${id}' AND certification_id = '${currentCert.old_certification_id}'))
+    //         BEGIN
+    //         UPDATE farm_certification SET
+    //         certification_date = ${certDate},
+    //         certification_id = '${currentCert.new_certification_id}',
+    //         updatedAt = '${now}'
+    //         WHERE (farm_id = '${id}' AND certification_id = '${currentCert.old_certification_id}')
+    //         END
+    //         ELSE
+    //         BEGIN
+    //         INSERT INTO farm_certification (certification_date, farm_id, certification_id, createdAt, updatedAt)
+    //         VALUES (${certDate}, '${id}', '${currentCert.new_certification_id}', '${now}', '${now}')
+    //         END
+    //         COMMIT TRAN`);
+
+    //         if (!farmCertUpdated) {
+    //             i = certLength;
+    //             return res.status(400).send({ message: 'Error. Se actualizó la finca, pero no se actualizaron las certificaciones. Intente nuevamente.' });
+    //         }
+    //     }
+    //     return res.status(200).send({ message: 'Finca actualizada con éxito', farm: farmUpdated });
+    // }
+    res.status(200).send({ message: "Finca actualizada con éxito" });
+  } catch (error) {
+    console.log("Hubo un error actualizando finca: ", error);
+    return res.status(400).send({ message: "Error actualizando el finca." });
+  }
+};
+
+const findAll = async (req, res) => {
+  try {
+    const farms = await Farm.findAll({ order: ["name"] });
+    if (!farms)
+      return res
+        .status(404)
+        .send({ message: "Error. No se encontraron fincas." });
+
+    res.status(200).send({ farms });
+  } catch (error) {
+    console.log("Hubo un error obteniendo fincas: ", error);
+    return res.status(400).send({ message: "Error obteniendo fincas." });
+  }
+};
+
+const findByIdFarm = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const farmFound = await Farm.findOne({
+      include: [
+        {
+          model: Municipality,
+          attributes: ["spanish_name"],
+          include: [
+            {
+              model: Department,
+              attributes: ["spanish_name"],
+              include: [
+                {
+                  model: Country,
+                  attributes: ["spanish_name"],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: User,
+          attributes: [
+            "id",
+            "first_name",
+            "second_name",
+            "first_surname",
+            "second_surname",
+            "technician_assigned_id",
+          ],
+        },
+        {
+          model: photosFarms,
+          attributes: ["photo"],
+        },
+        {
+          model: db.plot,
+          include: [
+            {
+              model: db.coffee_variety
+            },
+            {
+              model: db.plot_share_tree
+            }
+          ]
+        },
+        {
+          model: FarmHarvestPeriod,
+        },
+      ],
+      where: { farm_id: id },
+    });
+    if (!farmFound)
+      return res.status(404).send({ message: "Error. No se encontró finca." });
+
+    const dry = await FarmDryingMethod.findOne({
+      where: { farm_id: farmFound.id },
+      include: [{ model: db.drying_method, attributes: ["spanish_name"] }],
+    });
+    const tech = await User.findOne({
+      attributes: ["first_name", "first_surname"],
+      where: { id: farmFound.caravela_user.technician_assigned_id },
+    });
+    res.status(200).send({ farm: farmFound, dry: dry, tech: tech });
+  } catch (error) {
+    console.log("Hubo un error obteniendo finca: ", error);
+    return res.status(400).send({ message: "Error obteniendo finca." });
+  }
+};
+
+const findById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const farmFound = await Farm.findOne({
+      where: { farm_id: id },
+    });
+    if (!farmFound)
+      return res.status(404).send({ message: "Error. No se encontró finca." });
+
+    res.status(200).send({ farm: farmFound });
+  } catch (error) {
+    console.log("Hubo un error obteniendo finca: ", error);
+    return res.status(400).send({ message: "Error obteniendo finca." });
+  }
+};
+
+const findByUserId = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // const locationFound = await User.findOne({
+    //     attributes: ['municipality_id'],
+    //     where: { caravela_user_id: id },
+    //     include: [
+    //         {
+    //             model: Municipality,
+    //             include: [
+    //                 {
+    //                     model: Department,
+    //                     include: [
+    //                         {
+    //                             model: Country
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         }
+    //     ]
+    // });
+
+    // const countryFound = locationFound.dataValues.municipality.dataValues.department.dataValues.country;
+
+    // const dryingMethods = await DryingMethod.findAll({ order: ['spanish_name'] });
+    // if (!dryingMethods) return res.status(400).send({ message: 'No se encontraron métodos de secado.' });
+
+    // const fermentationTypes = await FermentationType.findAll({ order: ['spanish_name'] });
+    // if (!fermentationTypes) return res.status(400).send({ message: 'No se encontraron tipos de fermentación.' });
+
+    // const processTypes = await ProcessType.findAll({ order: ['spanish_name'] });
+    // if (!processTypes) return res.status(400).send({ message: 'No se encontraron tipos de proceso.' });
+
+    const farmFound = await Farm.findAll({
+      where: { user_id: id },
+      include: [
+        {
+          model: Municipality,
+          attributes: ["spanish_name", "municipality_id", "codigo", "id"],
+        },
+        {
+          model: photosFarms,
+          attributes: ["photo"],
+        },
+        {
+          model: DryingMethod,
+          attributes: ["drying_method_id", "spanish_name", "id"],
+          through: {
+            attributes: ["drying_method_id", "farm_id", "drying_time"],
+          },
+        },
+        {
+          model: FermentationType,
+          attributes: ["fermentation_type_id", "spanish_name", "id"],
+          through: {
+            attributes: ["fermentation_type_id", "farm_id"],
+          },
+        },
+        {
+          model: ProcessType,
+          attributes: ["process_type_id", "spanish_name", "id"],
+          through: {
+            attributes: ["process_type_id", "farm_id"],
+          },
+        },
+        {
+          model: FarmHarvestPeriod,
+          attributes: ["start", "end", "farm_id", "unique_id", "id"],
+          // through: {
+          //     attributes: ['unique_id', 'farm_id']
+          // }
+        },
+        {
+          model: FarmFlycropPeriod,
+          attributes: ["start", "end", "farm_id", "unique_id", "id"],
+          // through: {
+          //     attributes: ['unique_id', 'farm_id']
+          // }cetification_id
+        },
+        {
+          model: Certification,
+          attributes: ["certification_id", "spanish_name", "id"],
+          through: {
+            attributes: ["unique_id", "farm_id", "certification_id"],
+          },
+        },
+      ],
+    });
+    if (!farmFound)
+      return res.status(200).send({ message: "No se encontró finca." });
+
+    res.status(200).send({ farm: farmFound });
+  } catch (error) {
+    console.log("Hubo un error obteniendo finca: ", error);
+    return res.status(400).send({ message: "Error obteniendo finca." });
+  }
+};
+
+const deleteOne = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const farmDeleted = await Farm.destroy({ where: { farm_id: id } });
+    if (!farmDeleted)
+      return res.status(404).send({ message: "Error. No se borró finca." });
+
+    res
+      .status(200)
+      .send({ message: "Finca borrada con éxito", farm: farmDeleted });
+  } catch (error) {
+    console.log("Hubo un error borrando finca: ", error);
+    return res.status(400).send({ message: "Error borrando finca." });
+  }
+};
+
+const Remove = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const farmFound = await Farm.findOne({ where: { farm_id: id } });
+    if (!farmFound)
+      return res.status(404).send({ message: "Error. No se encontró finca." });
+    farmFound.state_id = 2;
+    farmFound.save();
+    await updateUser.refreshUser(farmFound.user_id);
+    return res.status(200).send({ message: "Se borro correctamente la finca" });
+  } catch (error) {
+    console.log({ error });
+    return res.status(400).send({ message: "Error borrando finca." });
+  }
+};
+
+const uploadImages = async (req, res) => {
+  try {
+    const parsedRequest = await parserService.parseRequest(req);
+    const body = parsedRequest.body;
+    const files = parsedRequest.files;
+
+    const images = files.images;
+    const farmId = body.farmId;
+    const addImages = body.addImages;
+    const filesArr = new Array();
+    if (images && images.path) {
+      const data = fs.readFileSync(images.path);
+      if (!data)
+        return res
+          .status(400)
+          .send({ message: "Hubo un error leyendo imágenes comprimidas." });
+      const readZip = await JSZip.loadAsync(data);
+      const destPath = path.join(__dirname, "../public/");
+      const imageUrls = new Array();
+      let errorCounter = 0;
+      const now = moment().utc().toISOString();
+      const keys = Object.keys(readZip.files);
+      for (let i = 0; i < keys.length; i++) {
+        const filename = keys[i];
+        const fileBuffer = await readZip.file(filename).async("nodebuffer");
+        if (!fileBuffer) errorCounter++;
+
+        const dest = destPath + filename;
+        fs.writeFileSync(dest, fileBuffer);
+        const uploaded = await uploadLocalFile(dest, filename);
+        if (!uploaded) errorCounter++;
+
+        const token = generateSasToken(containerName, filename);
+        const imageURL = token.url;
+        const imgId = uuid();
+        imageUrls.push({
+          img_id: imgId,
+          fileName: filename,
+          url: imageURL,
+          updated: now,
+        });
+        fs.unlinkSync(dest);
+      }
+      if (errorCounter > 0) {
+        return res
+          .status(400)
+          .send({ message: "Hubo un error generando buffers." });
+      } else if (errorCounter == 0) {
+        if (addImages) {
+          const farmFound = await Farm.findOne({ where: { farm_id: farmId } });
+          if (!farmFound)
+            return res.status(400).send({
+              message: "Error. No se encontró la finca.",
+              success: false,
+            });
+          const media = farmFound.dataValues.media;
+          let newMedia = new Array();
+          if (media && media.length) {
+            newMedia = media.concat(imageUrls);
+          } else {
+            newMedia = imageUrls;
+          }
+          const farmUpdated = await Farm.update(
+            { media: newMedia },
+            { where: { farm_id: farmId } }
+          );
+          if (!farmUpdated)
+            return res.status(400).send({
+              message: "Error. No se actualizó la finca.",
+              success: false,
+            });
+          return res.status(200).send({
+            message: "Las imagenes fueron guardadas exitosamente.",
+            success: true,
+          });
+        }
+        const farmUpdated = await Farm.update(
+          { media: imageUrls },
+          { where: { farm_id: farmId } }
+        );
+        if (!farmUpdated)
+          return res.status(400).send({
+            message: "Error. No se actualizó la finca.",
+            success: false,
+          });
+        return res.status(200).send({
+          message: "Las imagenes fueron guardadas exitosamente.",
+          success: true,
+        });
+      }
+    }
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+  }
+};
+const fermentationName = (name) => {
+  switch (name) {
+    case "Agua":
+      return "Water";
+      break;
+
+    default:
+      break;
+  }
+};
+const ProcessName = (name) => {
+  switch (name) {
+    case "Semi Lavado":
+      return "Semiwashed";
+      break;
+    case "Lavado":
+      return "Washed";
+      break;
+
+    default:
+      break;
+  }
+};
+const paramsFarmsAtlas = async (id_farm) => {
+  const farmFound = await Farm.findOne({
+    attributes: ["name", "location", "id", "user_id"],
+    include: [
+      {
+        model: Certification,
+        attributes: ["spanish_name"],
+        through: {
+          attributes: ["certification_id"],
+        },
+      },
+      {
+        model: FermentationType,
+        attributes: ["spanish_name"],
+        through: {
+          attributes: ["farm_id"],
+        },
+      },
+      {
+        model: ProcessType,
+        attributes: ["spanish_name"],
+        through: {
+          attributes: ["farm_id"],
+        },
+      },
+    ],
+    where: {
+      farm_id: id_farm,
+    },
+  });
+  let arrayFermentations = [];
+  for (let fermentation of farmFound.fermentation_type) {
+    arrayFermentations.push(fermentationName(fermentation.spanish_name));
+  }
+  let arrayCertifications = [];
+  for (let certification of farmFound.certification) {
+    arrayCertifications.push(certification.spanish_name);
+  }
+  let arrayProcessType = [];
+  for (let ProcessType of farmFound.process_type) {
+    arrayProcessType.push(ProcessName(ProcessType.spanish_name));
+  }
+
+  let farm = {
+    farm: {
+      name: farmFound.name,
+      address: farmFound.location,
+      certificateNames: arrayCertifications,
+      fermentationTypeNames: arrayFermentations,
+      varietyNames: [],
+      processTypesNames: arrayProcessType,
+      producerArabicaId: farmFound.user_id,
+      municipalityCode: "1018",
+      arabicaId: farmFound.id,
+    },
+  };
+  console.log(farm);
+};
+
+const saveFarms = async (req, res, next) => {
+  try {
+    /*
+        // Somewhere your code, turn off the logging
+            sequelize.options.logging = false
+
+            // Somewhere your code, turn on the logging
+            sequelize.options.logging = true 
+
+        */
+    const Farmsok = [];
+    const Farmserror = [];
+    const body = req.body;
+    if (body.farms) {
+      db.sequelize.options.logging = true;
+      for (let index = 0; index < body.farms.length; index++) {
+        const element = body.farms[index];
+
+        let userFound = null;
+        if (
+          element.dni &&
+          element.dni != "" &&
+          element.dni != undefined &&
+          element.dni != "0"
+        ) {
+          userFound = await User.findOne({
+            attributes: ["id"],
+            where: {
+              dni: element.dni,
+              role_id: 4,
+            },
+          });
+        } else {
+          userFound = await User.findOne({
+            attributes: ["id"],
+            where: {
+              caravela_user_id: element.user_id,
+            },
+          });
+        }
+
+        //Se verifica si viene el id de municipio
+        if (element.id_municipality) {
+          const MunicipalityExists = await Municipality.findOne({
+            attributes: ["id"],
+            where: { municipality_id: element.id_municipality },
+          });
+          element.id_municipality = MunicipalityExists.id;
+        }
+
+        if (element.location) {
+          // Colocar amtes
+          const MunicipalityExists = await Municipality.findOne({
+            attributes: ["id"],
+            where: { municipality_id: element.location },
+          });
+          element.id_municipality = MunicipalityExists.id;
+        }
+
+        if (userFound) {
+          console.log("FARM", element.farm_id)
+          const farmFound = await Farm.findOne({
+            where: {
+              farm_id: element.farm_id,
+              user_id: userFound.id,
+            },
+          });
+          if (farmFound) {
+            const farm2 = farmFound;
+            farmFound.name = element.name.trim();
+            farmFound.village = element.village;
+            if (element.location != null && element.location != "")
+              farmFound.location = element.location;
+            farmFound.gps_longitude = element.gps_longitude;
+            farmFound.gps_latitude = element.gps_latitude;
+            farmFound.masl_height = element.masl_height;
+            farmFound.total_area = element.total_area;
+            if (element.state_id != null && element.state_id != undefined)
+              farmFound.state_id = element.state_id;
+            else
+              farmFound.state_id = 1;
+            if (
+              element.id_municipality != null &&
+              element.id_municipality != ""
+            )
+              farmFound.id_municipality = element.id_municipality;
+            farmFound.total_coffee_area = element.total_coffee_area;
+            farmFound.total_coffee_productive_area =
+              element.total_coffee_productive_area;
+            farmFound.has_certifications = element.has_certifications;
+            farmFound.notes = element.notes;
+            farmFound.plots_number = element.plots_number;
+            const save = await farmFound.save();
+            if (save) {
+              const SyncAtalasFound = await db.Configuration.findOne({
+                attributes: ["value"],
+                where: {
+                  name: {
+                    [Op.like]: "sync atlas",
+                  },
+                },
+              });
+              if (SyncAtalasFound) {
+                console.log("SyncAtalasFound.value",SyncAtalasFound.value,farm2.state_id,userFound.id)
+                if (SyncAtalasFound.value && farm2.state_id == 1) {
+                  let devolvio = await ServiceAtlasCurl.setFarmAndProducer(
+                    element.farm_id,
+                    userFound.id
+                  );
+                }
+              }
+            } else next("No se actualizo la finca - BODY: " + element);
+          } else {
+            let Newfarm = null;
+            let errorUnique = true;
+            await Farm.create({
+              farm_id: element.farm_id,
+              name: element.name.trim(),
+              village: element.village,
+              location: element.location,
+              gps_longitude: element.gps_longitude,
+              gps_latitude: element.gps_latitude,
+              masl_height: element.masl_height,
+              total_area: element.total_area,
+              total_coffee_area: element.total_coffee_area,
+              total_coffee_productive_area:
+                element.total_coffee_productive_area,
+              has_certifications: element.has_certifications,
+              notes: element.notes,
+              state_id: element.state_id,
+              id_municipality: element.id_municipality
+                ? element.id_municipality
+                : null,
+              plots_number: element.plots_number,
+              user_id: userFound.id,
+            })
+              .then(function (item) {
+                Newfarm = item;
+              })
+              .catch(function (err) {
+                if (err.parent.constraint == "farm_new") errorUnique = true;
+                else errorUnique = false;
+              });
+
+            if (errorUnique) {
+              const SyncAtalasFound = await db.Configuration.findOne({
+                attributes: ["value"],
+                where: {
+                  name: {
+                    [Op.like]: "sync atlas",
+                  },
+                },
+              });
+              if (SyncAtalasFound) {
+                if (SyncAtalasFound.value) {
+                  let devolvio = await ServiceAtlasCurl.setFarmAndProducer(
+                    element.farm_id,
+                    userFound.id
+                  );
+                }
+              }
+            } else
+              next(
+                "Error en la creación de la finca - BODY: " +
+                JSON.stringify(element)
+              );
+          }
+        } else {
+          Farmserror.push(element.farm_id);
+          db.sequelize.options.logging = false;
+          next("No existe el usuario - BODY: " + JSON.stringify(element));
+        }
+      }
+    }
+    db.sequelize.options.logging = false;
+    return res.status(200).send({
+      message: "Se actualizaron los datos de las fincas correctamente !",
+      Farmsok,
+      Farmserror,
+    });
+  } catch (error) {
+    db.sequelize.options.logging = false;
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarms " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+const saveFarmsDryingmethods = async (req, res, next) => {
+  try {
+    const FarmsoDryingmethodsk = [];
+    const FarmsDryingmethodserror = [];
+    const body = req.body;
+    if (body.farmdryingmethods) {
+      for (let index = 0; index < body.farmdryingmethods.length; index++) {
+        const element = body.farmdryingmethods[index];
+        const farmFound = await Farm.findOne({
+          attributes: ["id", "user_id", "state_id"],
+          where: {
+            farm_id: element.farm_id,
+          },
+        });
+        let DryingMethodFound = await DryingMethod.findOne({
+          attributes: ["id"],
+          where: {
+            drying_method_id: element.drying_method_id.trim(),
+          },
+        });
+
+        if (!DryingMethodFound) {
+          DryingMethodFound = await DryingMethod.findOne({
+            attributes: ["id"],
+            where: {
+              spanish_name: element.drying_method_id.trim(),
+            },
+          });
+        }
+
+        if (farmFound && DryingMethodFound) {
+          const FarmDryingMethodFound = await FarmDryingMethod.update(
+            {
+              drying_method_id: DryingMethodFound.id,
+            },
+            {
+              where: {
+                unique_id: element.unique_id,
+              },
+            }
+          );
+          if (FarmDryingMethodFound[0] <= 0) {
+            //     FarmDryingMethodFound.drying_time = element.drying_time;
+            //     FarmDryingMethodFound.drying_method_id = DryingMethodFound.id;
+            //     const save =  FarmDryingMethodFound.save();
+            //     if(save)
+            //     FarmsoDryingmethodsk.push(element.unique_id);
+            //     else
+            //     FarmsDryingmethodserror.push(element.unique_id);
+            // } else {
+            const NewFarmDryingMethod = await FarmDryingMethod.build({
+              drying_time: element.drying_time,
+              farm_id: farmFound.id,
+              drying_method_id: DryingMethodFound.id,
+              unique_id: element.unique_id,
+            });
+            const FarmDryingMethodCreated = await NewFarmDryingMethod.save();
+            if (FarmDryingMethodCreated)
+              FarmsoDryingmethodsk.push(element.unique_id);
+            else FarmsDryingmethodserror.push(element.unique_id);
+          } else {
+            FarmsoDryingmethodsk.push(element.unique_id);
+          }
+        } else {
+          next(
+            "NO EXISTE saveFarmsDryingmethods  - BODY: " +
+            JSON.stringify(element)
+          );
+        }
+      }
+    }
+    res.status(200).send({
+      message: "Se actualizaron los datos de Métodos de secado correctamente !",
+      FarmsoDryingmethodsk,
+      FarmsDryingmethodserror,
+    });
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarmsDryingmethods " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+const saveFarmsCertifications = async (req, res, next) => {
+  try {
+    const FarmsCertificationsok = [];
+    const FarmsCertificationserror = [];
+    const body = req.body;
+    if (body.farmcertifications) {
+      db.sequelize.options.logging = true;
+      for (let index = 0; index < body.farmcertifications.length; index++) {
+        const element = body.farmcertifications[index];
+        const farmFound = await Farm.findOne({
+          attributes: ["id", "user_id", "state_id"],
+          where: {
+            farm_id: element.farm_id,
+          },
+        });
+        const CertificationFound = await Certification.findOne({
+          attributes: ["id"],
+          where: {
+            certification_id: element.certifications_id,
+          },
+        });
+        if (farmFound && CertificationFound) {
+          const FarmCertificationFound = await FarmCertification.update(
+            { certification_id: CertificationFound.id },
+            {
+              where: {
+                unique_id: element.unique_id,
+              },
+            }
+          );
+          if (FarmCertificationFound[0] <= 0) {
+            const NewFarmCertification = await FarmCertification.build({
+              farm_id: farmFound.id,
+              certification_id: CertificationFound.id,
+              unique_id: element.unique_id,
+            });
+            const FarmCertificationCreated = await NewFarmCertification.save();
+            if (FarmCertificationCreated) {
+              FarmsCertificationsok.push(element.unique_id);
+              const SyncAtalasFound = await db.Configuration.findOne({
+                attributes: ["value"],
+                where: {
+                  name: {
+                    [Op.like]: "sync atlas",
+                  },
+                },
+              });
+              if (SyncAtalasFound) {
+                if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                  let devolvio = await ServiceAtlasCurl.setFarmAndProducer(
+                    element.farm_id,
+                    farmFound.user_id
+                  );
+                }
+              }
+            } else FarmsCertificationserror.push(element.unique_id);
+          } else {
+            FarmsCertificationsok.push(element.unique_id);
+            const SyncAtalasFound = await db.Configuration.findOne({
+              attributes: ["value"],
+              where: {
+                name: {
+                  [Op.like]: "sync atlas",
+                },
+              },
+            });
+            if (SyncAtalasFound) {
+              if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                await ServiceAtlasCurl.setFarmAndProducer(
+                  element.farm_id,
+                  farmFound.user_id
+                );
+              }
+            }
+          }
+
+          if (element.eliminado === "SI") {
+            const uptFarmCertification = await FarmCertification.update(
+              {
+                deleteAt: Sequelize.fn("NOW"),
+              },
+              {
+                where: {
+                  unique_id: element.unique_id,
+                },
+              }
+            );
+            if (uptFarmCertification) {
+              FarmsCertificationsok.push(element.unique_id);
+
+              const SyncAtalasFound = await db.Configuration.findOne({
+                attributes: ["value"],
+                where: {
+                  name: {
+                    [Op.like]: "sync atlas",
+                  },
+                },
+              });
+              if (SyncAtalasFound) {
+                if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                  await ServiceAtlasCurl.setFarmAndProducer(
+                    element.farm_id,
+                    farmFound.user_id
+                  );
+                }
+              }
+            } else FarmsCertificationserror.push(element.unique_id);
+          }
+        } else {
+          next(
+            "NO EXISTE saveFarmsCertifications  - BODY: " +
+            JSON.stringify(element)
+          );
+        }
+      }
+      db.sequelize.options.logging = false;
+    }
+    res.status(200).send({
+      message: "Se actualizaron los datos de Certificaiones correctamente !",
+      FarmsCertificationsok,
+      FarmsCertificationserror,
+    });
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarmsCertifications " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+const saveFarmsFermentationtype = async (req, res, next) => {
+  try {
+    const Farmsfermentationtypeok = [];
+    const Farmsfermentationtypeerror = [];
+    const body = req.body;
+    if (body.fermentationtype) {
+      for (let index = 0; index < body.fermentationtype.length; index++) {
+        const element = body.fermentationtype[index];
+        const farmFound = await Farm.findOne({
+          attributes: ["id", "user_id", "state_id"],
+          where: {
+            farm_id: element.farm_id,
+          },
+        });
+        const FermentationTypeFound = await FermentationType.findOne({
+          attributes: ["id"],
+          where: {
+            fermentation_type_id: element.fermentation_type_id,
+          },
+        });
+        if (farmFound && FermentationTypeFound) {
+          const FarmFermentationTypeFound = await FarmFermentationType.update(
+            {
+              fermentation_type_id: FermentationTypeFound.id,
+            },
+            {
+              where: {
+                unique_id: element.unique_id,
+              },
+            }
+          );
+          if (FarmFermentationTypeFound[0] <= 0) {
+            const NewFarmFermentationType = await FarmFermentationType.build({
+              farm_id: farmFound.id,
+              fermentation_type_id: FermentationTypeFound.id,
+              unique_id: element.unique_id,
+            });
+            const FarmFermentationTypeCreated = await NewFarmFermentationType.save();
+            if (FarmFermentationTypeCreated) {
+              Farmsfermentationtypeok.push(element.unique_id);
+              const SyncAtalasFound = await db.Configuration.findOne({
+                attributes: ["value"],
+                where: {
+                  name: {
+                    [Op.like]: "sync atlas",
+                  },
+                },
+              });
+              if (SyncAtalasFound) {
+                if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                  await ServiceAtlasCurl.setFarmAndProducer(
+                    element.farm_id,
+                    farmFound.user_id
+                  );
+                }
+              }
+            } else Farmsfermentationtypeerror.push(element.unique_id);
+          } else {
+            Farmsfermentationtypeok.push(element.unique_id);
+            const SyncAtalasFound = await db.Configuration.findOne({
+              attributes: ["value"],
+              where: {
+                name: {
+                  [Op.like]: "sync atlas",
+                },
+              },
+            });
+            if (SyncAtalasFound) {
+              if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                await ServiceAtlasCurl.setFarmAndProducer(
+                  element.farm_id,
+                  farmFound.user_id
+                );
+              }
+            }
+          }
+        } else {
+          next(
+            "NO EXISTE saveFarmsFermentationtype  - BODY: " +
+            JSON.stringify(element)
+          );
+        }
+      }
+    }
+    res.status(200).send({
+      message: "Se actualizaron los datos de Métodos de secado correctamente !",
+      Farmsfermentationtypeok,
+      Farmsfermentationtypeerror,
+    });
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarmsFermentationtype " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+const saveFarmsProcesstypes = async (req, res, next) => {
+  try {
+    const FarmsProcesstypesok = [];
+    const FarmsProcesstypeserror = [];
+    const body = req.body;
+    if (body.processtypes) {
+      db.sequelize.options.logging = true;
+      for (let index = 0; index < body.processtypes.length; index++) {
+        const element = body.processtypes[index];
+        const farmFound = await Farm.findOne({
+          attributes: ["id", "user_id", "state_id"],
+          where: {
+            farm_id: element.farm_id,
+          },
+        });
+        const ProcessTypeFound = await ProcessType.findOne({
+          attributes: ["id"],
+          where: {
+            process_type_id: element.process_type_id,
+          },
+        });
+        if (farmFound && ProcessTypeFound) {
+          const FarmProcessTypeFound = await FarmProcessType.update(
+            {
+              process_type_id: ProcessTypeFound.id,
+            },
+            {
+              where: {
+                unique_id: element.unique_id,
+              },
+            }
+          );
+          if (FarmProcessTypeFound[0] <= 0) {
+            //     FarmProcessTypeFound.process_type_id = ProcessTypeFound.id;
+            //     const save =  FarmProcessTypeFound.save();
+            //     if(save)
+            //     FarmsProcesstypesok.push(element.unique_id);
+            //     else
+            //     FarmsProcesstypeserror.push(element.unique_id);
+            // } else {
+            const NewFarmProcessType = await FarmProcessType.build({
+              farm_id: farmFound.id,
+              process_type_id: ProcessTypeFound.id,
+              unique_id: element.unique_id,
+            });
+            const FarmProcessTypeCreated = await NewFarmProcessType.save();
+            if (FarmProcessTypeCreated) {
+              FarmsProcesstypesok.push(element.unique_id);
+              const SyncAtalasFound = await db.Configuration.findOne({
+                attributes: ["value"],
+                where: {
+                  name: {
+                    [Op.like]: "sync atlas",
+                  },
+                },
+              });
+              if (SyncAtalasFound) {
+                if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                  await ServiceAtlasCurl.setFarmAndProducer(
+                    element.farm_id,
+                    farmFound.user_id
+                  );
+                }
+              }
+            } else FarmsProcesstypeserror.push(element.caravela_user_id);
+          } else {
+            FarmsProcesstypesok.push(element.unique_id);
+            const SyncAtalasFound = await db.Configuration.findOne({
+              attributes: ["value"],
+              where: {
+                name: {
+                  [Op.like]: "sync atlas",
+                },
+              },
+            });
+            if (SyncAtalasFound) {
+              if (SyncAtalasFound.value && farmFound.state_id == 1) {
+                await ServiceAtlasCurl.setFarmAndProducer(
+                  element.farm_id,
+                  farmFound.user_id
+                );
+              }
+            }
+          }
+        } else {
+          next(
+            "NO EXISTE saveFarmsProcesstypes  - BODY: " +
+            JSON.stringify(element)
+          );
+        }
+      }
+      db.sequelize.options.logging = false;
+    }
+    res.status(200).send({
+      message: "Se actualizaron los datos de Métodos de secado correctamente !",
+      FarmsProcesstypesok,
+      FarmsProcesstypeserror,
+    });
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarmsProcesstypes " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+
+const saveFarmFlycropPeriods = async (req, res, next) => {
+  try {
+    const FarmFlycropPeriodsok = [];
+    const FarmFlycropPeriodserror = [];
+    const body = req.body;
+    if (body.flycropperiod) {
+      for (let index = 0; index < body.flycropperiod.length; index++) {
+        const element = body.flycropperiod[index];
+        const farmFound = await Farm.findOne({
+          attributes: ["id", "user_id", "state_id"],
+          where: {
+            farm_id: element.farm_id,
+          },
+        });
+        if (farmFound) {
+          const FarmFlycropPeriodFound = await FarmFlycropPeriod.update(
+            {
+              start: element.start,
+              end: element.end,
+            },
+            {
+              where: {
+                unique_id: element.unique_id,
+              },
+            }
+          );
+          if (FarmFlycropPeriodFound[0] <= 0) {
+            //     FarmFlycropPeriodFound.start = element.start;
+            //     FarmFlycropPeriodFound.end = element.end;
+            //     const save =  FarmFlycropPeriodFound.save();
+            //     if(save)
+            //     FarmFlycropPeriodsok.push(element.unique_id);
+            //     else
+            //     FarmFlycropPeriodserror.push(element.unique_id);
+            // } else {
+            const NewFarmFlycropPeriod = await FarmFlycropPeriod.build({
+              farm_id: farmFound.id,
+              start: element.start,
+              end: element.end,
+              unique_id: element.unique_id,
+            });
+            const FarmFlycropPeriodCreated = await NewFarmFlycropPeriod.save();
+            if (FarmFlycropPeriodCreated)
+              FarmFlycropPeriodsok.push(element.caravela_user_id);
+            else FarmFlycropPeriodserror.push(element.caravela_user_id);
+          } else {
+            FarmFlycropPeriodsok.push(element.caravela_user_id);
+          }
+        } else {
+          next(
+            "NO EXISTE saveFarmFlycropPeriods  - BODY: " +
+            JSON.stringify(element)
+          );
+        }
+      }
+    }
+    res.status(200).send({
+      message: "Se actualizaron los datos de Métodos de secado correctamente !",
+      FarmFlycropPeriodsok,
+      FarmFlycropPeriodserror,
+    });
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarmFlycropPeriods " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+
+const saveFarmHarvestPeriods = async (req, res, next) => {
+  try {
+    const FarmHarvestPeriodsok = [];
+    const FarmHarvestPeriodserror = [];
+    const body = req.body;
+    if (body.harvestperiods) {
+      for (let index = 0; index < body.harvestperiods.length; index++) {
+        const element = body.harvestperiods[index];
+        const farmFound = await Farm.findOne({
+          attributes: ["id", "user_id", "state_id"],
+          where: {
+            farm_id: element.farm_id,
+          },
+        });
+        if (farmFound) {
+          const FarmHarvestPeriodFound = await FarmHarvestPeriod.update(
+            {
+              start: element.start,
+              end: element.end,
+            },
+            {
+              where: {
+                unique_id: element.unique_id,
+              },
+            }
+          );
+          if (FarmHarvestPeriodFound[0] <= 0) {
+            //     FarmHarvestPeriodFound.start = element.start;
+            //     FarmHarvestPeriodFound.end = element.end;
+            //     const save =  FarmHarvestPeriodFound.save();
+            //     if(save)
+            //     FarmHarvestPeriodsok.push(element.unique_id);
+            //     else
+            //     FarmHarvestPeriodserror.push(element.unique_id);
+            // } else {
+            const NewFarmHarvestPeriod = await FarmHarvestPeriod.build({
+              farm_id: farmFound.id,
+              start: element.start,
+              end: element.end,
+              unique_id: element.unique_id,
+            });
+            const FarmHarvestPeriodCreated = await NewFarmHarvestPeriod.save();
+            if (FarmHarvestPeriodCreated)
+              FarmHarvestPeriodsok.push(element.caravela_user_id);
+            else FarmHarvestPeriodserror.push(element.caravela_user_id);
+          } else {
+            FarmHarvestPeriodsok.push(element.caravela_user_id);
+          }
+        } else {
+          next(
+            "NO EXISTE saveFarmHarvestPeriods  - BODY: " +
+            JSON.stringify(element)
+          );
+        }
+      }
+    }
+    res.status(200).send({
+      message: "Se actualizaron los datos de Métodos de secado correctamente !",
+      FarmHarvestPeriodsok,
+      FarmHarvestPeriodserror,
+    });
+  } catch (error) {
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado saveFarmHarvestPeriods " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+
+const createPhotoFarm = async (req, res, next) => {
+  try {
+    const body = req.body;
+    let namefile;
+    let Farmserror = [];
+
+    for (let i = 0; i < body.PhotosFarm.length; i++) {
+      db.sequelize.options.logging = true;
+      const element = body.PhotosFarm[i];
+      let img = element.photo;
+      const farmFound = await Farm.findOne({
+        attributes: ["id", "user_id", "state_id"],
+        where: {
+          farm_id: element.farm_id,
+        },
+      });
+      element.farm_id = farmFound.id;
+      if (farmFound) {
+        const photoFarmFound = await photosFarms.findOne({
+          attributes: ["id", "uuid"],
+          where: {
+            unique_id: element.unique_id,
+            farm_id: farmFound.id,
+          },
+        });
+
+        if (photoFarmFound) {
+          let id = photoFarmFound.uuid;
+
+          let image;
+          if (img != undefined) {
+            const fileName =
+              id +
+              "-photoFarm-" +
+              Math.floor(
+                Math.random() * (999999999 - 111111111 + 1) + 111111111
+              );
+
+            let base64Image = img.split(";base64,").pop();
+
+            fs.writeFileSync(
+              "img/userProfile/" + fileName + ".png",
+              base64Image,
+              {
+                encoding: "base64",
+              }
+            );
+
+            const fileZise = await getFilesizeInBytes(
+              "img/userProfile/" + fileName + ".png"
+            );
+
+            uploadLocalFile(
+              "img/userProfile/" + fileName + ".png",
+              fileName + ".png",
+              fileZise
+            );
+
+            const token = generateSasToken(containerName, fileName + ".png");
+            image = token.url;
+            namefile = fileName;
+
+            element.photo = image;
+          }
+
+          const updatePhotosFarms = await photosFarms.update(
+            {
+              //uuid: element.uuid,
+              unique_id: element.unique_id,
+              date: moment(element.date, "DD/MM/YYYY").format("YYYY-MM-DD"),
+              //  state_id: element.state_id,
+              //   farm_id: element.farm_id,
+              photo: element.photo,
+            },
+            {
+              where: {
+                id: photoFarmFound.id,
+              },
+            }
+          );
+          await updateUser.refreshFarm(element.farm_id);
+          if (img != undefined) {
+            await ereaserFile("img/userProfile/" + namefile + ".png");
+          }
+        } else {
+          let id = uuid();
+
+          let image;
+          if (img != undefined) {
+            const fileName =
+              id +
+              "-photoFarm-" +
+              Math.floor(
+                Math.random() * (999999999 - 111111111 + 1) + 111111111
+              );
+
+            let base64Image = img.split(";base64,").pop();
+
+            fs.writeFileSync(
+              "img/userProfile/" + fileName + ".png",
+              base64Image,
+              {
+                encoding: "base64",
+              }
+            );
+
+            const fileZise = await getFilesizeInBytes(
+              "img/userProfile/" + fileName + ".png"
+            );
+
+            await uploadLocalFile(
+              "img/userProfile/" + fileName + ".png",
+              fileName + ".png",
+              fileZise
+            );
+
+            const token = generateSasToken(containerName, fileName + ".png");
+            image = token.url;
+            namefile = fileName;
+
+            element.photo = image;
+          }
+
+          await photosFarms.create({
+            uuid: id,
+            unique_id: element.unique_id,
+            date: moment(element.date, "DD/MM/YYYY").format("YYYY-MM-DD"),
+            state_id: element.state_id,
+            farm_id: element.farm_id,
+            photo: element.photo,
+          });
+          await updateUser.refreshFarm(element.farm_id);
+          if (img != undefined) {
+            await ereaserFile("img/userProfile/" + namefile + ".png");
+          }
+        }
+      } else {
+        Farmserror.push(element.farm_id);
+        db.sequelize.options.logging = false;
+        next("No existe la finca - BODY: " + JSON.stringify(element));
+      }
+    }
+    db.sequelize.options.logging = false;
+    res.status(200).send({
+      message: "Se actualizaron los datos de Métodos de secado correctamente !",
+      Farmserror,
+    });
+  } catch (error) {
+    db.sequelize.options.logging = false;
+    console.log("Hubo un error cargando imágenes: ", error);
+    next(
+      "Error generado createPhotoFarm " +
+      error +
+      " - BODY: " +
+      JSON.stringify(req.body)
+    );
+  }
+};
+
+const updatePhotoFarm = async (req, res, next) => { };
+export default {
+  create,
+  update,
+  findAll,
+  findById,
+  findByUserId,
+  deleteOne,
+  uploadImages,
+  deleteImage,
+  saveFarms,
+  saveFarmsDryingmethods,
+  saveFarmsFermentationtype,
+  saveFarmFlycropPeriods,
+  saveFarmsProcesstypes,
+  saveFarmHarvestPeriods,
+  saveFarmsCertifications,
+  createPhotoFarm,
+  updatePhotoFarm,
+  findByIdFarm,
+  Remove,
+};
