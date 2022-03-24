@@ -2202,3 +2202,445 @@ module.exports = (sequelize, DataTypes) => {
   return caravela_user;
 };
 
+
+
+
+www.js file
+
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+import app from "../app";
+import debug from "debug";
+import http from "http";
+import socketIO from "socket.io";
+
+debug("caravela-app-api:server");
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
+
+/**
+ * Create HTTP server.
+ */
+
+const server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+
+// IO = esta es la comunicacion del backend
+module.exports.io = socketIO(server, {
+  path: "/chat/socket.io",
+  // secure: true,
+  // rejectUnauthorized: false
+});
+require("../sockets/socket");
+
+server.listen(port);
+server.on("error", onError);
+server.on("listening", onListening);
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+
+  var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
+      process.exit(1);
+      break;
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  debug("Listening on " + bind);
+  console.log(`Server running at port ${port}`);
+}
+
+
+db.js
+
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+import Sequelize from 'sequelize';
+import CertificationModel from '../models/certification.model';
+import CivilStatusModel from '../models/civil_status.model';
+import CoffeeVarietyModel from '../models/coffee_variety.model';
+import CountryModel from '../models/country.model';
+import DepartmentModel from '../models/department.model';
+import DniTypeModel from '../models/dni_type.model';
+import DniTypeCountryModel from '../models/dni_type_country.model';
+import DryingMethodModel from '../models/drying_method';
+import FamilyMemberModel from '../models/family_member.model';
+import FarmCertificationModel from '../models/farm_certification.model';
+import FarmDryingMethodModel from '../models/farm_drying_method.model';
+import FarmFermentationTypeModel from '../models/farm_fermentation_type.model';
+import FarmProcessTypeModel from '../models/farm_process_type.model';
+import FarmModel from '../models/farm.model';
+import FermentationTypeModel from '../models/fermentation_type.model';
+import FilledSurveyModel from '../models/filled_survey.model';
+import GenderModel from '../models/gender.model';
+import MunicipalityModel from '../models/municipality.model';
+import PlotRenovationModel from '../models/plot_renovation.model';
+import PlotModel from '../models/plot.model';
+import ProcessTypeModel from '../models/process_type.model';
+import RelationshipModel from '../models/relationship.model';
+import RenovationTypeModel from '../models/renovation_type.model';
+import ScholarshipModel from '../models/scholarship.model';
+import SurveyTypeModel from './models/survey';
+import SurveyModel from './models/survey';
+import UserTypeModel from '../models/user_type.model';
+import UserVisitModel from '../models/user_visit.model';
+import UserModel from '../models/user.model';
+import VisitTypeModel from '../models/visit_type.model';
+import VisitModel from '../models/visit.model';
+import QuestionModel from './models/question';
+import QuestionTypeModel from './models/question_type';
+import OptionQuestionModel from './models/option_question';
+import userSurveyModel from '../models/user_surveys.model';
+import { AnswerSurveryModel } from "./models/answer_survey";
+
+
+
+const hasSomething = (string) => {
+    if (string !== null && string !== undefined && string !== '') {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+let db_host = '';
+let db_database = '';
+let db_username = '';
+let db_password = '';
+
+if (process.env.NODE_ENV == 'development') {
+    db_host = process.env.DB_DEV_HOST;
+    db_database = process.env.DB_DEV_DATABASE;
+    db_username = process.env.DB_DEV_USERNAME;
+    db_password = process.env.DB_DEV_PASSWORD;
+} else if (process.env.NODE_ENV == 'production') {
+    db_host = process.env.DB_PROD_HOST;
+    db_database = process.env.DB_PROD_DATABASE;
+    db_username = process.env.DB_PROD_USERNAME;
+    db_password = process.env.DB_PROD_PASSWORD;
+}
+
+if (!hasSomething(db_host) || !hasSomething(db_database) || !hasSomething(db_username) || !hasSomething(db_password)) {
+    console.log('Hacen falta ciertos datos para realizar conexión a BD.');
+}
+
+const sequelize = new Sequelize(db_database, db_username, db_password, {
+    host: db_host,
+    dialect: 'postgres',
+    port: '5432',
+    logging: false,
+    timezone: 'utc'
+});
+
+// Tablas independientes
+const Certification = CertificationModel(sequelize, Sequelize);
+const CivilStatus = CivilStatusModel(sequelize, Sequelize);
+const CoffeeVariety = CoffeeVarietyModel(sequelize, Sequelize);
+const Country = CountryModel(sequelize, Sequelize);
+const DniType = DniTypeModel(sequelize, Sequelize);
+const DryingMethod = DryingMethodModel(sequelize, Sequelize);
+const FermentationType = FermentationTypeModel(sequelize, Sequelize);
+const Gender = GenderModel(sequelize, Sequelize);
+const ProcessType = ProcessTypeModel(sequelize, Sequelize);
+const Relationship = RelationshipModel(sequelize, Sequelize);
+const RenovationType = RenovationTypeModel(sequelize, Sequelize);
+const Scholarship = ScholarshipModel(sequelize, Sequelize);
+const SurveyType = SurveyTypeModel(sequelize, Sequelize);
+const UserType = UserTypeModel(sequelize, Sequelize);
+const VisitType = VisitTypeModel(sequelize, Sequelize);
+const QuestionType = QuestionTypeModel(sequelize, Sequelize);
+const userSurvey = userSurveyModel(sequelize, Sequelize);
+
+
+
+// Tablas dependientes
+const User = UserModel(sequelize, Sequelize);
+const FamilyMember = FamilyMemberModel(sequelize, Sequelize);
+const Visit = VisitModel(sequelize, Sequelize);
+const UserVisit = UserVisitModel(sequelize, Sequelize);
+const Survey = SurveyModel(sequelize, Sequelize);
+const OptionQuestion = OptionQuestionModel(sequelize, Sequelize);
+const Question = QuestionModel(sequelize, Sequelize);
+const FilledSurvey = FilledSurveyModel(sequelize, Sequelize);
+const DniTypeCountry = DniTypeCountryModel(sequelize, Sequelize);
+const Farm = FarmModel(sequelize, Sequelize);
+const FarmCertification = FarmCertificationModel(sequelize, Sequelize);
+const FarmDryingMethod = FarmDryingMethodModel(sequelize, Sequelize);
+const FarmFermentationType = FarmFermentationTypeModel(sequelize, Sequelize);
+const FarmProcessType = FarmProcessTypeModel(sequelize, Sequelize);
+const Department = DepartmentModel(sequelize, Sequelize);
+const Municipality = MunicipalityModel(sequelize, Sequelize);
+const Plot = PlotModel(sequelize, Sequelize);
+const PlotRenovation = PlotRenovationModel(sequelize, Sequelize);
+
+
+/** Survey associations */
+
+// With user creator
+Survey.belongsTo(User, { foreignKey: { name: 'creator_user_id', allowNull: false } });
+User.hasMany(Survey, { foreignKey: { name: 'creator_user_id', allowNull: false } });
+// With user delete
+Survey.belongsTo(User, { foreignKey: { name: 'delete_user_id', allowNull: true } });
+User.hasMany(Survey, { foreignKey: { name: 'delete_user_id', allowNull: true } });
+
+
+
+Survey.belongsToMany(User, { through: 'userSurvey', foreignKey : 'survey_id' });
+User.belongsToMany(Survey, { through: 'userSurvey', foreignKey : 'caravela_user_id' });
+/** Question associations */
+
+Question.belongsTo(Survey, { foreignKey: { name: 'survey_id', allowNull: false } });
+Survey.hasMany(Question, { foreignKey: { name: 'survey_id', allowNull: false } });
+
+Question.belongsTo(QuestionType, { foreignKey: { name: 'type_question_id', allowNull: false } });
+QuestionType.hasMany(Question, { foreignKey: { name: 'type_question_id', allowNull: false } });
+Question.belongsTo(User, { foreignKey: { name: 'creator_user_id', allowNull: false } });
+User.hasMany(Question, { foreignKey: { name: 'creator_user_id', allowNull: false } });
+
+/** Option associations */
+OptionQuestion.belongsTo(Question, { foreignKey: { name: 'question_id', allowNull: false } });
+Question.hasMany(OptionQuestion, { foreignKey: { name: 'question_id', allowNull: false } });
+
+
+
+/** User associations */
+
+// With civil status
+User.belongsTo(CivilStatus, { foreignKey: { name: 'civil_status_id', allowNull: true } });
+CivilStatus.hasMany(User, { foreignKey: { name: 'civil_status_id', allowNull: true } });
+
+// With DNI type
+User.belongsTo(DniType, { foreignKey: { name: 'dni_type_id', allowNull: false } });
+DniType.hasMany(User, { foreignKey: { name: 'dni_type_id', allowNull: false } });
+
+// With gender
+User.belongsTo(Gender, { foreignKey: { name: 'gender_id', allowNull: false } });
+Gender.hasMany(User, { foreignKey: { name: 'gender_id', allowNull: false } });
+
+// With municipality
+User.belongsTo(Municipality, { foreignKey: { name: 'municipality_id', allowNull: false } });
+Municipality.hasMany(User, { foreignKey: { name: 'municipality_id', allowNull: false } });
+
+// With user type
+User.belongsTo(UserType, { foreignKey: { name: 'user_type_id', allowNull: false } });
+UserType.hasMany(User, { foreignKey: { name: 'user_type_id', allowNull: false } });
+
+// With family member
+User.hasMany(FamilyMember, { foreignKey: { name: 'user_id', allowNull: false } });
+FamilyMember.belongsTo(User, { foreignKey: { name: 'user_id', allowNull: false } });
+
+// With farm
+User.hasMany(Farm, { foreignKey: { name: 'user_id', allowNull: false } });
+Farm.belongsTo(User, { foreignKey: { name: 'user_id', allowNull: false } });
+
+// With itself
+User.hasMany(User, { foreignKey: { name: 'created_by', allowNull: true } });
+User.belongsTo(User, { foreignKey: { name: 'created_by', allowNull: true } });
+
+User.hasMany(User, { foreignKey: { name: 'boss', allowNull: true } });
+User.belongsTo(User, { foreignKey: { name: 'boss', allowNull: true } });
+
+User.hasMany(User, { foreignKey: { name: 'technician_assigned_id', allowNull: true } });
+User.belongsTo(User, { foreignKey: { name: 'technician_assigned_id', allowNull: true } });
+
+/** Department associations */
+
+// With country
+Department.belongsTo(Country, { foreignKey: { name: 'country_id', allowNull: false } });
+Country.hasMany(Department, { foreignKey: { name: 'country_id', allowNull: false } });
+
+// With municipality
+Department.hasMany(Municipality, { foreignKey: { name: 'department_id', allowNull: false } });
+Municipality.belongsTo(Department, { foreignKey: { name: 'department_id', allowNull: false } });
+
+/** Country associations */
+Country.belongsToMany(DniType, { through: DniTypeCountry, foreignKey: 'country_id', allowNull: false });
+DniType.belongsToMany(Country, { through: DniTypeCountry, foreignKey: 'dni_type_id', allowNull: false });
+
+/** Family member associations */
+
+// With gender
+FamilyMember.belongsTo(Gender, { foreignKey: { name: 'gender_id', allowNull: true } });
+Gender.hasMany(FamilyMember, { foreignKey: { name: 'gender_id', allowNull: true } });
+
+// With relationship
+FamilyMember.belongsTo(Relationship, { foreignKey: { name: 'relationship_id', allowNull: false } });
+Relationship.hasMany(FamilyMember, { foreignKey: { name: 'relationship_id', allowNull: false } });
+
+// With scholarship
+FamilyMember.belongsTo(Scholarship, { foreignKey: { name: 'scholarship_id', allowNull: true } });
+Scholarship.hasMany(FamilyMember, { foreignKey: { name: 'scholarship_id', allowNull: true } });
+
+/** Farm associations */
+
+// With certification through FarmCertification
+Farm.belongsToMany(Certification, { through: FarmCertification, foreignKey: 'farm_id' });
+Certification.belongsToMany(Farm, { through: FarmCertification, foreignKey: 'certification_id' });
+
+// With drying method through FarmDryingMethod
+Farm.belongsToMany(DryingMethod, { through: FarmDryingMethod, foreignKey: 'farm_id' });
+DryingMethod.belongsToMany(Farm, { through: FarmDryingMethod, foreignKey: 'drying_method_id' });
+
+// With fermentation type through FarmFermentationType
+Farm.belongsToMany(FermentationType, { through: FarmFermentationType, foreignKey: 'farm_id' });
+FermentationType.belongsToMany(Farm, { through: FarmFermentationType, foreignKey: 'fermentation_type_id' });
+
+// With process type through FarmProcessType
+Farm.belongsToMany(ProcessType, { through: FarmProcessType, foreignKey: 'farm_id' });
+ProcessType.belongsToMany(Farm, { through: FarmProcessType, foreignKey: 'process_type_id' });
+
+// With plot
+Farm.hasMany(Plot, { foreignKey: { name: 'farm_id', allowNull: false } });
+Plot.belongsTo(Farm, { foreignKey: { name: 'farm_id', allowNull: false } });
+
+/** Filled survey associations */
+
+// With visit
+FilledSurvey.belongsTo(Visit, { foreignKey: { name: 'visit_id', allowNull: false } });
+Visit.hasMany(FilledSurvey, { foreignKey: { name: 'visit_id', allowNull: false } });
+
+// With survey
+FilledSurvey.belongsTo(Survey, { foreignKey: { name: 'survey_id', allowNull: false } });
+Survey.hasMany(FilledSurvey, { foreignKey: { name: 'survey_id', allowNull: false } });
+
+/** Plot renovations */
+
+// With renovation type through PlotRenovation
+Plot.belongsToMany(RenovationType, { through: { model: PlotRenovation, unique: false }, foreignKey: 'plot_id' });
+RenovationType.belongsToMany(Plot, { through: { model: PlotRenovation, unique: false }, foreignKey: 'renovation_type_id' });
+
+// With coffee variety
+Plot.belongsTo(CoffeeVariety, { foreignKey: { name: 'coffee_variety_id', allowNull: false } });
+CoffeeVariety.hasMany(Plot, { foreignKey: { name: 'coffee_variety_id', allowNull: false } });
+
+/** Survey associations */
+
+// With survey type
+Survey.belongsTo(SurveyType, { foreignKey: { name: 'survey_type_id', allowNull: false } });
+SurveyType.hasMany(Survey, { foreignKey: { name: 'survey_type_id', allowNull: false } });
+
+
+/** Visit associations */
+
+// With visit type
+Visit.belongsTo(VisitType, { foreignKey: { name: 'visit_type_id', allowNull: false } });
+VisitType.hasMany(Visit, { foreignKey: { name: 'visit_type_id', allowNull: false } });
+
+// With user through UserVisit
+UserVisit.belongsTo(User, { foreignKey: { name: 'visiting_technician_id', allowNull: false } });
+User.hasMany(UserVisit, { foreignKey: { name: 'visiting_technician_id', allowNull: false } });
+
+
+UserVisit.belongsTo(User, { foreignKey: { name: 'producer_visited_id', allowNull: false } });
+User.hasMany(UserVisit, { foreignKey: { name: 'producer_visited_id', allowNull: false } });
+
+UserVisit.belongsTo(Visit, { foreignKey: { name: 'visit_id', allowNull: false } });
+Visit.hasMany(UserVisit, { foreignKey: { name: 'visit_id', allowNull: false } });
+
+
+sequelize.sync()
+    .then(() => {
+        if (process.env.NODE_ENV == 'development') {
+            console.log('Conexión exitosa con BD de desarrollo.');
+        } else if (process.env.NODE_ENV == 'production') {
+            console.log('Conexión exitosa con BD de producción.');
+        }
+    }).catch(err => {
+        console.log('Error conectando a BD: ', err);
+    });
+
+export default {
+    Certification,
+    CivilStatus,
+    CoffeeVariety,
+    Country,
+    Department,
+    DniType,
+    DniTypeCountry,
+    DryingMethod,
+    FamilyMember,
+    Farm,
+    FarmCertification,
+    FarmDryingMethod,
+    FarmFermentationType,
+    FarmProcessType,
+    FermentationType,
+    FilledSurvey,
+    Gender,
+    Municipality,
+    Plot,
+    PlotRenovation,
+    ProcessType,
+    Relationship,
+    RenovationType,
+    Scholarship,
+    Survey,
+    Question,
+    OptionQuestion,
+    SurveyType,
+    User,
+    UserType,
+    UserVisit,
+    Visit,
+    userSurvey,
+    VisitType,
+    sequelize,
+   
+}
